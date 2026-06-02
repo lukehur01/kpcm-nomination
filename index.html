@@ -1,96 +1,927 @@
-// ── 공통 헬퍼 ──────────────────────────────────────────────
-function corsResponse(data) {
-  return ContentService
-    .createTextOutput(JSON.stringify(data))
-    .setMimeType(ContentService.MimeType.JSON);
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KPCM 임직자 추천서 / Nomination Form</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600;700&family=Noto+Sans+KR:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #1a2744; --gold: #b8922a; --gold-light: #d4aa4a;
+    --cream: #faf8f3; --warm-gray: #f0ece2; --border: #d6ceb8;
+    --text: #2c2c2c; --text-light: #666; --white: #ffffff; --green: #2d6a4f;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans KR', sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; }
+
+  .header { background: var(--navy); padding: 40px 24px 32px; text-align: center; position: relative; overflow: hidden; }
+  .header::before { content:''; position:absolute; top:0;left:0;right:0;bottom:0; background:repeating-linear-gradient(45deg,transparent,transparent 30px,rgba(184,146,42,0.04) 30px,rgba(184,146,42,0.04) 31px); }
+  .header-cross { font-size:20px; color:var(--gold); letter-spacing:12px; margin-bottom:16px; opacity:0.8; }
+  .header h1 { font-family:'Cormorant Garamond',serif; font-size:clamp(22px,5vw,32px); color:var(--white); font-weight:600; line-height:1.3; }
+  .header h1 span { display:block; font-size:clamp(14px,3vw,18px); color:var(--gold-light); font-style:italic; font-weight:400; margin-top:4px; }
+  .header-divider { width:60px; height:2px; background:var(--gold); margin:16px auto; }
+  .header-sub { color:rgba(255,255,255,0.65); font-size:13px; }
+
+  .tab-container { max-width:960px; margin:0 auto; padding:28px 20px 0; }
+  .tab-label { text-align:center; font-size:13px; color:var(--text-light); margin-bottom:12px; }
+  .tabs { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .tab-btn { padding:16px 12px; border:2px solid var(--border); background:var(--white); border-radius:10px; cursor:pointer; transition:all 0.2s; text-align:center; }
+  .tab-btn.active { border-color:var(--navy); background:var(--navy); color:var(--white); }
+  .tab-btn:not(.active):hover { border-color:var(--gold); background:var(--warm-gray); }
+  .tab-btn .tab-ko { display:block; font-size:16px; font-weight:600; font-family:'Noto Serif KR',serif; margin-bottom:3px; }
+  .tab-btn .tab-en { display:block; font-size:11px; opacity:0.7; }
+  .tab-btn .tab-count { display:inline-block; margin-top:6px; font-size:11px; background:var(--gold); color:var(--white); border-radius:10px; padding:2px 8px; }
+  .tab-btn.active .tab-count { background:rgba(255,255,255,0.25); }
+
+  .main-wrap { max-width:960px; margin:0 auto; padding:20px 20px 60px; }
+
+  /* ── DESKTOP: side-by-side ── */
+  .two-col { display:grid; grid-template-columns:300px 1fr; gap:20px; align-items:start; }
+  .candidate-panel { position:sticky; top:20px; }
+
+  /* ── MOBILE / TABLET: stacked with collapsible drawer ── */
+  @media(max-width:750px){
+    .two-col { grid-template-columns:1fr; }
+    .candidate-panel { position:static; }
+
+    /* Floating FAB button to open drawer */
+    .cand-fab {
+      display:flex; align-items:center; gap:8px;
+      position:fixed; bottom:24px; right:20px; z-index:500;
+      background:var(--navy); color:var(--white);
+      border:none; border-radius:28px; padding:12px 20px;
+      font-size:14px; font-family:'Noto Sans KR',sans-serif; font-weight:600;
+      box-shadow:0 4px 20px rgba(0,0,0,0.25); cursor:pointer;
+      transition:background 0.2s, transform 0.15s;
+    }
+    .cand-fab:active { transform:scale(0.96); }
+    .cand-fab .fab-badge {
+      background:var(--gold); color:var(--navy);
+      border-radius:10px; padding:1px 7px; font-size:11px; font-weight:700;
+    }
+
+    /* Drawer overlay */
+    .drawer-overlay {
+      display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:600;
+    }
+    .drawer-overlay.open { display:block; }
+
+    /* Drawer panel slides up from bottom */
+    .drawer-panel {
+      position:fixed; bottom:0; left:0; right:0; z-index:700;
+      background:var(--white); border-radius:20px 20px 0 0;
+      max-height:80vh; display:flex; flex-direction:column;
+      transform:translateY(100%); transition:transform 0.3s cubic-bezier(0.32,0.72,0,1);
+      box-shadow:0 -4px 30px rgba(0,0,0,0.18);
+    }
+    .drawer-panel.open { transform:translateY(0); }
+    .drawer-handle { width:40px; height:4px; background:var(--border); border-radius:2px; margin:12px auto 0; flex-shrink:0; }
+    .drawer-header {
+      background:var(--navy); padding:14px 18px; flex-shrink:0;
+      display:flex; align-items:center; justify-content:space-between;
+      margin-top:8px;
+    }
+    .drawer-header h3 { font-family:'Noto Serif KR',serif; color:var(--gold-light); font-size:14px; }
+    .drawer-header p { color:rgba(255,255,255,0.5); font-size:11px; margin-top:2px; }
+    .drawer-close { background:none; border:none; color:rgba(255,255,255,0.7); font-size:22px; cursor:pointer; padding:0 4px; line-height:1; }
+    .drawer-body { padding:14px; overflow-y:auto; flex:1; }
+
+    /* Hide desktop panel-card on mobile */
+    .candidate-panel .panel-card { display:none; }
+  }
+
+  /* On desktop hide drawer elements */
+  @media(min-width:751px){
+    .cand-fab { display:none !important; }
+    .drawer-overlay { display:none !important; }
+    .drawer-panel { display:none !important; }
+  }
+
+  .form-section { display:none; animation:fadeIn 0.3s ease; }
+  .form-section.active { display:block; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+
+  /* CANDIDATE PANEL (desktop) */
+  .panel-card { background:var(--white); border-radius:12px; border:1px solid var(--border); overflow:hidden; }
+  .panel-header { background:var(--navy); padding:16px 18px; }
+  .panel-header h3 { font-family:'Noto Serif KR',serif; color:var(--gold-light); font-size:14px; margin-bottom:2px; }
+  .panel-header p { color:rgba(255,255,255,0.5); font-size:11px; }
+  .panel-body { padding:14px; max-height:75vh; overflow-y:auto; }
+  .panel-body::-webkit-scrollbar { width:4px; }
+  .panel-body::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+  .cand-search { width:100%; padding:8px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; font-family:'Noto Sans KR',sans-serif; margin-bottom:12px; outline:none; }
+  .cand-search:focus { border-color:var(--navy); }
+  .cand-group { margin-bottom:14px; }
+  .cand-group-title { font-size:10.5px; font-weight:600; color:var(--text-light); text-transform:uppercase; letter-spacing:0.4px; margin-bottom:7px; padding-bottom:4px; border-bottom:1px solid var(--border); }
+  .cand-grid { display:flex; flex-wrap:wrap; gap:5px; }
+  .cand-chip { display:inline-flex; align-items:center; gap:5px; padding:5px 10px; border-radius:20px; border:1.5px solid var(--border); background:var(--warm-gray); font-size:12.5px; cursor:pointer; transition:all 0.15s; font-family:'Noto Sans KR',sans-serif; }
+  .cand-chip:hover { border-color:var(--gold); background:#fff8e7; }
+  .cand-chip.selected { border-color:var(--green); background:#e8f5e9; color:var(--green); font-weight:600; }
+  .chip-avatar { width:20px; height:20px; border-radius:50%; background:var(--navy); color:var(--white); font-size:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-weight:600; overflow:hidden; }
+  .chip-avatar img { width:100%; height:100%; object-fit:cover; }
+  .cand-chip.selected .chip-avatar { background:var(--green); }
+
+  /* FORM SIDE */
+  .qualifications { background:var(--navy); border-radius:12px; padding:20px; margin-bottom:16px; margin-top:20px; }
+  .qualifications h3 { font-family:'Noto Serif KR',serif; color:var(--gold-light); font-size:14px; margin-bottom:12px; display:flex; align-items:center; gap:8px; }
+  .qualifications h3::before { content:'✦'; font-size:11px; }
+  .qual-list { list-style:none; display:flex; flex-direction:column; gap:7px; }
+  .qual-list li { font-size:11.5px; color:rgba(255,255,255,0.8); line-height:1.55; padding-left:22px; position:relative; }
+  .qual-num { position:absolute; left:0; width:18px; height:18px; border-radius:50%; background:var(--gold); color:var(--navy); font-size:10px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; top:1px; }
+  .qual-list li em { display:block; color:rgba(255,255,255,0.45); font-style:normal; font-size:11px; margin-top:1px; }
+  .qual-notice { margin-top:14px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.1); font-size:11.5px; color:rgba(255,255,255,0.6); line-height:1.7; }
+
+  .card { background:var(--white); border-radius:12px; border:1px solid var(--border); padding:20px; margin-bottom:16px; }
+  .card-title { font-family:'Noto Serif KR',serif; font-size:14px; font-weight:600; color:var(--navy); margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+  .card-title::before { content:''; width:4px; height:16px; background:var(--gold); border-radius:2px; flex-shrink:0; }
+  .field-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+  @media(max-width:520px){ .field-row{ grid-template-columns:1fr; } }
+  .field { display:flex; flex-direction:column; gap:5px; }
+  label { font-size:12px; font-weight:500; color:var(--navy); }
+  label span { font-size:11px; color:var(--text-light); font-weight:400; margin-left:4px; }
+  input[type="text"], input[type="tel"], textarea, select { padding:9px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; font-family:'Noto Sans KR',sans-serif; color:var(--text); background:var(--cream); transition:border-color 0.2s,background 0.2s; outline:none; width:100%; }
+  input:focus, textarea:focus, select:focus { border-color:var(--navy); background:var(--white); }
+  .date-row { display:flex; gap:8px; }
+  .date-row select { flex:1; min-width:70px; }
+  .required-star { color:#c0392b; margin-left:2px; }
+  .selected-count { display:inline-block; background:var(--green); color:white; border-radius:12px; padding:2px 8px; font-size:11px; margin-left:8px; font-weight:400; }
+
+  /* NOMINEE CARD */
+  .nominee-card {
+    border:1.5px solid var(--border); border-radius:10px;
+    margin-bottom:12px; overflow:hidden; background:var(--white);
+    transition:border-color 0.2s;
+  }
+  .nominee-card.has-name { border-color:var(--navy); }
+  .nominee-card-header {
+    display:flex; align-items:center; gap:10px;
+    padding:10px 14px; background:var(--warm-gray);
+    border-bottom:1px solid var(--border);
+  }
+  .nominee-card.has-name .nominee-card-header { background:#eef1f7; border-bottom-color:#c5cde3; }
+  .nominee-num { width:26px; height:26px; border-radius:50%; background:var(--border); color:var(--navy); font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .nominee-card.has-name .nominee-num { background:var(--navy); color:var(--white); }
+  .nominee-name-input { flex:1; border:none; background:transparent; font-size:14px; font-weight:600; font-family:'Noto Sans KR',sans-serif; color:var(--navy); outline:none; padding:0; }
+  .nominee-name-input::placeholder { font-weight:400; color:#aaa; font-size:13px; }
+  .nominee-clear { background:none; border:none; color:#aaa; cursor:pointer; font-size:16px; padding:2px 4px; line-height:1; }
+  .nominee-clear:hover { color:#c0392b; }
+
+  .nominee-card-body { padding:12px 14px; display:none; }
+  .nominee-card.has-name .nominee-card-body { display:block; }
+
+  /* REASON QUAL CHIPS */
+  .reason-section-label { font-size:11px; font-weight:600; color:var(--text-light); margin-bottom:7px; letter-spacing:0.3px; }
+  .qual-chips { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:10px; }
+  .qual-chip {
+    display:inline-flex; align-items:center; gap:4px;
+    padding:4px 10px; border-radius:16px;
+    border:1.5px solid var(--border); background:var(--warm-gray);
+    font-size:11.5px; cursor:pointer; transition:all 0.15s;
+    font-family:'Noto Sans KR',sans-serif; color:var(--text);
+  }
+  .qual-chip:hover { border-color:var(--gold); background:#fff8e7; }
+  .qual-chip.active { border-color:var(--navy); background:var(--navy); color:var(--white); }
+  .qual-chip .qnum { width:16px; height:16px; border-radius:50%; background:var(--gold); color:var(--navy); font-size:9px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .qual-chip.active .qnum { background:var(--gold-light); }
+
+  .reason-divider { font-size:11px; color:var(--text-light); margin:8px 0 8px; display:flex; align-items:center; gap:8px; }
+  .reason-divider::before, .reason-divider::after { content:''; flex:1; height:1px; background:var(--border); }
+
+  .reason-memo { width:100%; padding:8px 10px; border:1.5px solid var(--border); border-radius:8px; font-size:12.5px; font-family:'Noto Sans KR',sans-serif; color:var(--text); background:var(--cream); outline:none; resize:vertical; min-height:52px; line-height:1.6; transition:border-color 0.2s; }
+  .reason-memo:focus { border-color:var(--navy); background:var(--white); }
+  .reason-preview { margin-top:8px; font-size:11px; color:var(--text-light); font-style:italic; min-height:16px; }
+
+  .notice-box { background:#fff8e7; border:1px solid #e8d9a0; border-radius:10px; padding:12px 16px; font-size:12px; color:#7a6020; line-height:1.7; margin-bottom:16px; }
+  .submit-area { text-align:center; margin-top:20px; }
+  .btn-submit { background:var(--navy); color:var(--white); border:none; padding:15px 44px; font-size:15px; font-family:'Noto Sans KR',sans-serif; font-weight:600; border-radius:10px; cursor:pointer; transition:background 0.2s,transform 0.1s; }
+  .btn-submit:hover { background:#243560; }
+  .btn-submit:active { transform:scale(0.98); }
+  .btn-submit:disabled { background:#aaa; cursor:not-allowed; }
+  .btn-sub { display:block; font-size:11px; opacity:0.7; font-weight:400; margin-top:3px; }
+
+  /* SUCCESS */
+  .success-screen { display:none; text-align:center; padding:60px 24px; animation:fadeIn 0.4s ease; max-width:600px; margin:0 auto; }
+  .success-screen.show { display:block; }
+  .success-icon { width:72px; height:72px; background:#e8f5e9; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:32px; margin:0 auto 20px; }
+  .success-screen h2 { font-family:'Noto Serif KR',serif; font-size:22px; color:var(--navy); margin-bottom:8px; }
+  .success-screen p { color:var(--text-light); font-size:14px; line-height:1.7; margin-bottom:24px; }
+  .summary-card { background:var(--warm-gray); border:1px solid var(--border); border-radius:10px; padding:18px; margin-top:16px; text-align:left; font-size:13px; line-height:1.9; }
+  .summary-card h4 { font-family:'Noto Serif KR',serif; color:var(--navy); margin-bottom:10px; font-size:14px; }
+  .btn-reset { background:transparent; border:2px solid var(--navy); color:var(--navy); padding:11px 28px; border-radius:8px; font-size:14px; font-family:'Noto Sans KR',sans-serif; cursor:pointer; transition:all 0.2s; }
+  .btn-reset:hover { background:var(--navy); color:var(--white); }
+  .btn-next { background:var(--gold); color:var(--navy); border:none; padding:15px 36px; border-radius:10px; font-size:15px; font-family:'Noto Sans KR',sans-serif; font-weight:700; cursor:pointer; transition:background 0.2s,transform 0.1s; box-shadow:0 4px 14px rgba(184,146,42,0.35); }
+  .btn-next:hover { background:var(--gold-light); }
+  .btn-next:active { transform:scale(0.97); }
+  .btn-next .btn-next-sub { display:block; font-size:11px; font-weight:400; opacity:0.75; margin-top:3px; }
+
+  /* MODAL */
+  .modal-overlay { display:none; position:fixed; top:0;left:0;right:0;bottom:0; background:rgba(0,0,0,0.6); z-index:1000; align-items:center; justify-content:center; }
+  .modal-overlay.show { display:flex; }
+  .modal-box { background:var(--white); border-radius:16px; padding:28px; text-align:center; max-width:300px; width:90%; position:relative; }
+  .modal-avatar { width:90px; height:90px; border-radius:50%; background:var(--warm-gray); border:3px solid var(--gold); margin:0 auto 14px; overflow:hidden; display:flex; align-items:center; justify-content:center; font-size:34px; color:var(--navy); }
+  .modal-name { font-family:'Noto Serif KR',serif; font-size:20px; font-weight:600; color:var(--navy); margin-bottom:4px; }
+  .modal-cat { font-size:12px; color:var(--text-light); margin-bottom:16px; }
+  .modal-close { position:absolute; top:12px; right:16px; background:none; border:none; font-size:20px; cursor:pointer; color:var(--text-light); }
+  .modal-btn { background:var(--navy); color:var(--white); border:none; padding:10px 20px; border-radius:8px; font-size:13px; font-family:'Noto Sans KR',sans-serif; cursor:pointer; margin:4px; transition:background 0.2s; }
+  .modal-btn:hover { background:#243560; }
+  .modal-btn.secondary { background:transparent; border:2px solid var(--border); color:var(--text); }
+  .modal-btn.secondary:hover { border-color:var(--navy); color:var(--navy); }
+
+  /* Loading spinner */
+  .loading-panel { text-align:center; padding:30px; color:var(--text-light); font-size:13px; }
+  .spinner { display:inline-block; width:24px; height:24px; border:3px solid var(--border); border-top-color:var(--navy); border-radius:50%; animation:spin 0.8s linear infinite; margin-bottom:8px; }
+  @keyframes spin { to{transform:rotate(360deg)} }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-cross">✦ ✦ ✦</div>
+  <h1>마이아미 한인 장로 교회<span>Korean Presbyterian Church of Miami</span></h1>
+  <div class="header-divider"></div>
+  <div class="header-sub">임직자 추천서 &nbsp;|&nbsp; Nomination Form</div>
+</div>
+
+<div id="mainContent">
+  <div class="tab-container">
+    <p class="tab-label">추천 직분을 선택해 주세요 / Select the position to nominate</p>
+    <div class="tabs">
+      <button class="tab-btn active" onclick="switchTab('elder')" id="tab-elder">
+        <span class="tab-ko">시무 장로</span><span class="tab-en">Ruling Elder</span>
+        <span class="tab-count">최대 3명 / Up to 3</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('deacon')" id="tab-deacon">
+        <span class="tab-ko">시무 안수집사</span><span class="tab-en">Ruling Deacon</span>
+        <span class="tab-count">최대 15명 / Up to 15</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="main-wrap">
+
+    <!-- ===== ELDER ===== -->
+    <div class="form-section active" id="section-elder">
+
+      <!-- Mobile FAB -->
+      <button class="cand-fab" onclick="openDrawer('elder')">
+        👥 대상자 명단 보기
+        <span class="fab-badge" id="elder-fab-count">0</span>
+      </button>
+
+      <!-- Mobile Drawer -->
+      <div class="drawer-overlay" id="elder-drawer-overlay" onclick="closeDrawer('elder')"></div>
+      <div class="drawer-panel" id="elder-drawer-panel">
+        <div class="drawer-handle"></div>
+        <div class="drawer-header">
+          <div>
+            <h3>추천 대상자 명단 / Candidate List</h3>
+            <p>이름 클릭 → 추천란 자동 입력 · Click name to add</p>
+          </div>
+          <button class="drawer-close" onclick="closeDrawer('elder')">✕</button>
+        </div>
+        <div class="drawer-body">
+          <input class="cand-search" type="text" placeholder="이름 검색 / Search..." oninput="filterCandidates('elder',this.value); renderCandidateList('elder',this.value)">
+          <div id="elder-cand-list-mobile"></div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="candidate-panel">
+          <div class="panel-card">
+            <div class="panel-header">
+              <h3>추천 대상자 명단 / Candidate List</h3>
+              <p>이름 클릭 → 추천란 자동 입력 · Click name to add</p>
+            </div>
+            <div class="panel-body">
+              <input class="cand-search" type="text" placeholder="이름 검색 / Search..." oninput="filterCandidates('elder',this.value)">
+              <div id="elder-cand-list"><div class="loading-panel"><div class="spinner"></div><br>명단 불러오는 중...</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="qualifications" id="elder-quals">
+            <h3>추천 자격 기준 / Qualifications</h3>
+            <ul class="qual-list" id="elder-qual-list"></ul>
+            <div class="qual-notice">※ 직분은 명예가 아니고 교회의 덕을 세우며 주님의 사역에 동참하고 헌신하는 것입니다.<br><em style="color:rgba(255,255,255,0.4);font-size:11px;">The position is not for honor but to edify the church and dedicate oneself in Jesus's Ministry.</em></div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">추천인 정보 / Submitter Information</div>
+            <div class="field-row">
+              <div class="field"><label>추천인 성명 <span>/ Name</span><span class="required-star">*</span></label><input type="text" id="elder-submitter-name" placeholder="홍길동 / Hong Gil Dong"></div>
+              <div class="field"><label>연락처 <span>/ Phone</span><span class="required-star">*</span></label><input type="tel" id="elder-submitter-phone" placeholder="305-000-0000"></div>
+            </div>
+            <div class="field"><label>제출 날짜 <span>/ Date</span></label>
+              <div class="date-row">
+                <select id="elder-year"></select>
+                <select id="elder-month"><option value="">Month/월</option><option value="1">1월/Jan</option><option value="2">2월/Feb</option><option value="3">3월/Mar</option><option value="4">4월/Apr</option><option value="5">5월/May</option><option value="6">6월/Jun</option><option value="7">7월/Jul</option><option value="8">8월/Aug</option><option value="9">9월/Sep</option><option value="10">10월/Oct</option><option value="11">11월/Nov</option><option value="12">12월/Dec</option></select>
+                <select id="elder-day"></select>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">장로 추천 명단 / Elder Nominees <span style="font-weight:400;color:var(--text-light);font-size:12px;">(최대 3명)</span><span class="selected-count" id="elder-sel-count">0/3</span></div>
+            <div id="elder-nominees"></div>
+          </div>
+
+          <div class="notice-box"><strong>※ 추천인의 성명과 연락처가 없는 추천서는 무효 처리됩니다.</strong><br><em>Forms without your name and contact information will be invalidated.</em><br>※ 추천 사유는 가능하면 적어주시기 바랍니다. <em>"Reasons for recommendation" is preferred.</em></div>
+          <div class="submit-area"><button class="btn-submit" onclick="submitForm('elder')">추천서 제출하기<span class="btn-sub">Submit Nomination Form</span></button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== DEACON ===== -->
+    <div class="form-section" id="section-deacon">
+
+      <!-- Mobile FAB -->
+      <button class="cand-fab" onclick="openDrawer('deacon')">
+        👥 대상자 명단 보기
+        <span class="fab-badge" id="deacon-fab-count">0</span>
+      </button>
+
+      <!-- Mobile Drawer -->
+      <div class="drawer-overlay" id="deacon-drawer-overlay" onclick="closeDrawer('deacon')"></div>
+      <div class="drawer-panel" id="deacon-drawer-panel">
+        <div class="drawer-handle"></div>
+        <div class="drawer-header">
+          <div>
+            <h3>추천 대상자 명단 / Candidate List</h3>
+            <p>이름 클릭 → 추천란 자동 입력 · Click name to add</p>
+          </div>
+          <button class="drawer-close" onclick="closeDrawer('deacon')">✕</button>
+        </div>
+        <div class="drawer-body">
+          <input class="cand-search" type="text" placeholder="이름 검색 / Search..." oninput="filterCandidates('deacon',this.value); renderCandidateList('deacon',this.value)">
+          <div id="deacon-cand-list-mobile"></div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="candidate-panel">
+          <div class="panel-card">
+            <div class="panel-header">
+              <h3>추천 대상자 명단 / Candidate List</h3>
+              <p>이름 클릭 → 추천란 자동 입력 · Click name to add</p>
+            </div>
+            <div class="panel-body">
+              <input class="cand-search" type="text" placeholder="이름 검색 / Search..." oninput="filterCandidates('deacon',this.value)">
+              <div id="deacon-cand-list"><div class="loading-panel"><div class="spinner"></div><br>명단 불러오는 중...</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="qualifications" id="deacon-quals">
+            <h3>추천 자격 기준 / Qualifications</h3>
+            <ul class="qual-list" id="deacon-qual-list"></ul>
+            <div class="qual-notice">※ 직분은 명예가 아니고 교회의 덕을 세우며 주님의 사역에 동참하고 헌신하는 것입니다.<br><em style="color:rgba(255,255,255,0.4);font-size:11px;">The position is not for honor but to edify the church and dedicate oneself in Jesus's Ministry.</em></div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">추천인 정보 / Submitter Information</div>
+            <div class="field-row">
+              <div class="field"><label>추천인 성명 <span>/ Name</span><span class="required-star">*</span></label><input type="text" id="deacon-submitter-name" placeholder="홍길동 / Hong Gil Dong"></div>
+              <div class="field"><label>연락처 <span>/ Phone</span><span class="required-star">*</span></label><input type="tel" id="deacon-submitter-phone" placeholder="305-000-0000"></div>
+            </div>
+            <div class="field"><label>제출 날짜 <span>/ Date</span></label>
+              <div class="date-row">
+                <select id="deacon-year"></select>
+                <select id="deacon-month"><option value="">Month/월</option><option value="1">1월/Jan</option><option value="2">2월/Feb</option><option value="3">3월/Mar</option><option value="4">4월/Apr</option><option value="5">5월/May</option><option value="6">6월/Jun</option><option value="7">7월/Jul</option><option value="8">8월/Aug</option><option value="9">9월/Sep</option><option value="10">10월/Oct</option><option value="11">11월/Nov</option><option value="12">12월/Dec</option></select>
+                <select id="deacon-day"></select>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">안수집사 추천 명단 / Deacon Nominees <span style="font-weight:400;color:var(--text-light);font-size:12px;">(최소 1명, 최대 15명)</span><span class="selected-count" id="deacon-sel-count">0/15</span></div>
+            <div id="deacon-nominees"></div>
+          </div>
+
+          <div class="notice-box"><strong>※ 추천인의 성명과 연락처가 없는 추천서는 무효 처리됩니다.</strong><br><em>Forms without your name and contact information will be invalidated.</em><br>※ 추천 사유는 가능하면 적어주시기 바랍니다. <em>"Reasons for recommendation" is preferred.</em></div>
+          <div class="submit-area"><button class="btn-submit" onclick="submitForm('deacon')">추천서 제출하기<span class="btn-sub">Submit Nomination Form</span></button></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- SUCCESS -->
+<div class="success-screen" id="successScreen">
+  <div class="success-icon">✓</div>
+  <h2>추천서가 제출되었습니다</h2>
+  <p>감사합니다. 귀하의 추천서가 성공적으로 접수되었습니다.<br><em style="font-size:13px;color:#999;">Thank you. Your nomination form has been successfully submitted.</em></p>
+  <div class="summary-card" id="summaryCard"></div>
+  <div style="display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:24px;">
+    <button class="btn-next" id="btn-next-other" onclick="goToOther()"></button>
+    <button class="btn-reset" onclick="resetForm()">같은 직분 다시 제출 / Submit Same Again</button>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="photoModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-avatar" id="modalAvatar"></div>
+    <div class="modal-name" id="modalName"></div>
+    <div class="modal-cat" id="modalCat"></div>
+    <button class="modal-btn" id="modalAddBtn" onclick="addFromModal()">+ 추천에 추가 / Add</button>
+    <button class="modal-btn secondary" onclick="closeModal()">닫기 / Close</button>
+  </div>
+</div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzVdoGedB-VseNYW2L-5RGkvbT-jUN7NTDRuyZ-57q9_OHPOnM60lrm4vPYF8gpNBY/exec';
+
+// ── Qualification texts (loaded from Sheets, fallback below) ─
+let QUALS = { elder: [], deacon: [] };
+
+const QUALS_FALLBACK = {
+  elder: [
+    { ko:'교회의 모든 공 예배에 잘 참석하시는 성도', en:'Participates well in worship services' },
+    { ko:'교회의 모든 교육 훈련에 잘 참석하시는 성도', en:'Participates well in church education programs' },
+    { ko:'교우들을 열심히 섬기며 솔선수범하여 봉사하시는 성도', en:'Serves others well and takes initiatives' },
+    { ko:'성경적 헌금 생활을 하시는 성도', en:'Gives offering biblically' },
+    { ko:'선교와 전도에 열심인 성도', en:'Eager for missions and evangelism' },
+    { ko:'성경적인 임직자의 자격을 가지고 교회를 대표하기에 부족함이 없는 성도', en:'Has biblical qualifications and represents the church well' },
+    { ko:'가정에서 배우자와 자녀로부터 존경받는 성도', en:'Respected by spouse and children at home' },
+    { ko:'말과 행동이 겸손하며 교회와 세상 가운데 정직히 행하여 본이 되는 성도', en:'Humble and a role model in and outside the church' },
+    { ko:'안수집사·협동장로·휴무장로로서 3년 이상 출석하신 분', en:'Attended KPCM ≥3 years as Ruling Deacon / Cooperative or Non-Ruling Elder' }
+  ],
+  deacon: [
+    { ko:'교회의 모든 공 예배에 잘 참석하시는 성도', en:'Participates well in worship services' },
+    { ko:'교회의 모든 교육 훈련에 잘 참석하시는 성도', en:'Participates well in church education programs' },
+    { ko:'교우들을 열심히 섬기며 솔선수범하여 봉사하시는 성도', en:'Serves others well and takes initiatives' },
+    { ko:'성경적 헌금 생활을 하시는 성도', en:'Gives offering biblically' },
+    { ko:'선교와 전도에 열심인 성도', en:'Eager for missions and evangelism' },
+    { ko:'성경적인 임직자의 자격을 가지고 교회를 대표하기에 부족함이 없는 성도', en:'Has biblical qualifications and represents the church well' },
+    { ko:'가정에서 배우자와 자녀로부터 존경받는 성도', en:'Respected by spouse and children at home' },
+    { ko:'말과 행동이 겸손하며 교회와 세상 가운데 정직히 행하여 본이 되는 성도', en:'Humble and a role model in and outside the church' },
+    { ko:'서리집사·협동안수집사·휴무집사로서 3년 이상 출석하신 성도', en:'Attended KPCM ≥3 years as Deputy / Cooperative / Non-Ruling Deacon' }
+  ]
+};
+
+// ── Fallback candidate data (used if Sheets fails to load) ───
+const FALLBACK = {
+  elder: [
+    { group:'시무집사 3년차 (Third Year Ruling Deacon)', names:['권은영','김승신','빈벤자민','이영섭','이정원','정지원','한동호','홍성진'] },
+    { group:'시무집사 2년차 재임 (Second Year Re-installed)', names:['권영민','김미용','박민선','백지연','송민정','신에스더','신지연','안혜경','오자희','윤기승','이범석','이영정'] },
+    { group:'시무집사 1년차 재임 (First Year Re-installed)', names:['김군자','김진','김호선','서스티브','이인아','최선아','한성희','홍도선'] },
+    { group:'휴무집사 (Non-Ruling Deacon)', names:['고민정','곽형진','김길성','김나리','김남진','김동원','김보영','김인영','김재형','김진오','데이비스플로이드','박남선','박병욱','박상만','박원규','박인순','박혜원','서성혜','손다니엘','신지현','신훈','양재창','오석우','이묘환','이사라','이상엽','이선희','이승재','이은주','이정희','이종규','이중의','정구홍','조항신','지미희','최순애','최정숙','최진호','현혜원','Willie Johnson'] },
+    { group:'휴무집사(권사) (Deaconess)', names:['김동희','김선희','김성옥','김영주','김임숙','데이비스옥분','도순신','레브랑영희','문윤경','서보미','송순려','유희옥','윤장옥','이경숙','이복례','이애숙','이효선','임성순','정경숙','정정선','홍영이','황명휘'] },
+    { group:'협동장로 3년이상 (Cooperative Elder ≥3yrs)', names:['전말용','하버낸시'] },
+    { group:'휴무장로 (Non-Ruling Elder)', names:['김문식','김승회','김영구','김종선','김창용','Michael LeBlanc','문인석','서능권','유한용','이재윤','지형진','이재규'] }
+  ],
+  deacon: [
+    { group:'서리집사 3년이상 출석 (Deputy Deacon ≥3yrs)', names:['곽미령','권정민','권주영','김경자','김광수','김명진','김명애','김미아','김알리스','김영란','김우재','김재현','김지영','김형미','박로','박미숙','박성진','박영은','박조이','박지향','박창민','박철수','변경애','변옥규','서가진','서영종','서인수','서희주','송승호','신성수','신용민','양승재','오써니','오Kenneth','이기형','이미나','이상훈','이성림','이정화','이준호','이지연','이현경','이혜진(a)','이혜진(b)','임미숙','임성빈','전일수','정규식','정미선','정용범','정혁','정형숙','조광제','조광휘','조미연','조현미','최왕','최지희','한정희'] },
+    { group:'협동안수집사 3년이상 (Cooperative Deacon ≥3yrs)', names:['백상진','안신열','이성행','이순영','이주면','허영남'] },
+    { group:'휴무집사 (Non-Ruling Deacon)', names:['고민정','곽형진','김길성','김나리','김남진','김동원','김보영','김인영','김재형','김진오','데이비스플로이드','박남선','박병욱','박상만','박원규','박인순','박혜원','서성혜','손다니엘','손종필','신지현','신훈','양재창','오석우','이묘환','이사라','이상엽','이선희','이승재','이은주','이정희','이종규','이중의','정구홍','조항신','지미희','최순애','최정숙','최진호','현혜원','Willie Johnson'] },
+    { group:'협동안수집사/서리집사(권사) (Kwonsa – not installed)', names:['김효경','데이비스옥분','민정혜','박복선','유정자','이병남','이성자','장현숙','홍미숙'] },
+    { group:'휴무집사(권사) (Kwonsa – previously installed)', names:['김동희','김선희','김성옥','김영주','김임숙','데이비스옥분','도순신','레브랑영희','문윤경','서보미','송순려','유희옥','윤장옥','이경숙','이복례','이애숙','이효선','임성순','정경숙','정정선','홍영이','황명휘'] }
+  ]
+};
+
+const photos = {}; // 사진 추가 시: photos['이름'] = 'URL';
+
+// ── State ────────────────────────────────────────────────────
+let candidateData = { elder: [], deacon: [] };
+let selectedNames = { elder: [], deacon: [] };
+let lastSubmittedType = 'elder'; // track which form was last submitted
+// selectedQuals[type][slotIndex] = Set of qual indices (1-based)
+let selectedQuals = { elder: {}, deacon: {} };
+let modalCurrentName = '', modalCurrentType = '', modalCurrentGroup = '';
+
+// ── Build qualification list UI ──────────────────────────────
+function buildQualLists(type) {
+  const types = type ? [type] : ['elder','deacon'];
+  types.forEach(t => {
+    const ul = document.getElementById(t + '-qual-list');
+    if (!ul) return;
+    ul.innerHTML = '';
+    QUALS[t].forEach((q, i) => {
+      const li = document.createElement('li');
+      li.innerHTML = `<span class="qual-num">${i+1}</span>${q.ko}<em>${q.en}</em>`;
+      ul.appendChild(li);
+    });
+  });
 }
 
-// ── GET: 명단 & 자격기준 불러오기 ──────────────────────────
-function doGet(e) {
-  try {
-    var ss = SpreadsheetApp.getActiveSpreadsheet();
-    var action = e.parameter.action || 'candidates';
-    var type   = e.parameter.type;  // 'elder' or 'deacon'
+// ── Build nominee cards ──────────────────────────────────────
+function buildNomineeCards(type, count) {
+  const container = document.getElementById(type + '-nominees');
+  container.innerHTML = '';
+  for (let i = 1; i <= count; i++) {
+    selectedQuals[type][i] = new Set();
+    const card = document.createElement('div');
+    card.className = 'nominee-card';
+    card.id = type + '-card-' + i;
 
-    // 후보자 명단
-    if (action === 'candidates') {
-      var sheetName = type === 'elder' ? '장로대상자' : '집사대상자';
-      var sheet = ss.getSheetByName(sheetName);
-      var rows  = sheet.getDataRange().getValues();
-      var groups = {}, order = [];
-      rows.forEach(function(row) {
-        var group = (row[0]||'').toString().trim();
-        var name  = (row[1]||'').toString().trim();
-        if (!group || !name) return;
-        if (!groups[group]) { groups[group]=[]; order.push(group); }
-        groups[group].push(name);
-      });
-      return corsResponse({ result:'success',
-        data: order.map(function(g){ return {group:g, names:groups[g]}; })
-      });
-    }
+    // Qual chips HTML
+    const qualChipsHtml = QUALS[type].map((q, qi) =>
+      `<span class="qual-chip" data-type="${type}" data-slot="${i}" data-qi="${qi+1}" onclick="toggleQual('${type}',${i},${qi+1})">
+        <span class="qnum">${qi+1}</span>${q.ko.length > 15 ? q.ko.substring(0,14)+'…' : q.ko}
+      </span>`
+    ).join('');
 
-    // 자격 기준
-    if (action === 'quals') {
-      var sheetName = type === 'elder' ? '장로자격기준' : '집사자격기준';
-      var sheet = ss.getSheetByName(sheetName);
-      var rows  = sheet.getDataRange().getValues();
-      var quals = [];
-      rows.forEach(function(row) {
-        var ko = (row[1]||'').toString().trim();
-        var en = (row[2]||'').toString().trim();
-        if (ko) quals.push({ ko: ko, en: en });
-      });
-      return corsResponse({ result:'success', data: quals });
-    }
-
-  } catch(err) {
-    return corsResponse({ result:'error', message: err.toString() });
+    card.innerHTML = `
+      <div class="nominee-card-header">
+        <div class="nominee-num" id="${type}-rownum-${i}">${i}</div>
+        <input class="nominee-name-input" type="text" id="${type}-name-${i}"
+          placeholder="성명 입력 또는 왼쪽에서 클릭 / Enter name or click from list"
+          oninput="onNameInput('${type}',${i})">
+        <button class="nominee-clear" onclick="clearNominee('${type}',${i})" title="지우기">✕</button>
+      </div>
+      <div class="nominee-card-body">
+        <div class="reason-section-label">추천 사유 선택 / Select Reasons (번호 클릭 · Click numbers)</div>
+        <div class="qual-chips">${qualChipsHtml}</div>
+        <div class="reason-divider">추가 메모 / Additional Notes (선택 · Optional)</div>
+        <textarea class="reason-memo" id="${type}-memo-${i}"
+          placeholder="자격 기준 외 추가 사유나 개인적인 추천 이유를 자유롭게 적어주세요.\nAdd any personal reasons beyond the qualifications above."
+          oninput="updateReasonPreview('${type}',${i})"></textarea>
+        <div class="reason-preview" id="${type}-preview-${i}"></div>
+      </div>`;
+    container.appendChild(card);
   }
 }
 
-// ── POST: 추천서 제출 + 중복 체크 ─────────────────────────
-function doPost(e) {
-  try {
-    var ss   = SpreadsheetApp.getActiveSpreadsheet();
-    var data = JSON.parse(e.postData.contents);
-    var type = data.type;
-    var sheetName = type === 'elder' ? '장로추천' : '안수집사추천';
-    var sheet = ss.getSheetByName(sheetName);
+// ── Toggle qual chip ─────────────────────────────────────────
+function toggleQual(type, slot, qi) {
+  const set = selectedQuals[type][slot];
+  const chip = document.querySelector(`.qual-chip[data-type="${type}"][data-slot="${slot}"][data-qi="${qi}"]`);
+  if (set.has(qi)) { set.delete(qi); chip.classList.remove('active'); }
+  else { set.add(qi); chip.classList.add('active'); }
+  updateReasonPreview(type, slot);
+}
 
-    // ── 헤더 자동 생성 ──
-    if (sheet.getLastRow() === 0) {
-      var headers = ['제출시간','추천인 성명','연락처','날짜'];
-      var max = type === 'elder' ? 3 : 15;
-      for (var i = 1; i <= max; i++) headers.push('추천'+i+'_성명','추천'+i+'_사유');
-      sheet.appendRow(headers);
+function updateReasonPreview(type, slot) {
+  const set = selectedQuals[type][slot];
+  const memo = (document.getElementById(type + '-memo-' + slot) || {}).value || '';
+  const parts = [];
+  if (set.size > 0) {
+    const nums = [...set].sort((a,b)=>a-b);
+    parts.push('자격기준 ' + nums.map(n => '#' + n).join(', '));
+  }
+  if (memo.trim()) parts.push('추가: ' + memo.trim().substring(0,40) + (memo.trim().length > 40 ? '…' : ''));
+  const el = document.getElementById(type + '-preview-' + slot);
+  if (el) el.textContent = parts.length ? '📝 ' + parts.join(' · ') : '';
+}
+
+function buildReasonText(type, slot) {
+  const set = selectedQuals[type][slot];
+  const memo = (document.getElementById(type + '-memo-' + slot) || {}).value || '';
+  const parts = [];
+  if (set.size > 0) {
+    const nums = [...set].sort((a,b)=>a-b);
+    const labels = nums.map(n => `[${n}] ${QUALS[type][n-1].ko}`);
+    parts.push(labels.join(' / '));
+  }
+  if (memo.trim()) parts.push('추가메모: ' + memo.trim());
+  return parts.join(' | ');
+}
+
+// ── Name input handler ───────────────────────────────────────
+function onNameInput(type, i) {
+  const val = document.getElementById(type + '-name-' + i).value.trim();
+  const card = document.getElementById(type + '-card-' + i);
+  card.className = 'nominee-card' + (val ? ' has-name' : '');
+  updateSelCount(type);
+  refreshChips(type);
+}
+
+function clearNominee(type, i) {
+  const nameEl = document.getElementById(type + '-name-' + i);
+  const memoEl = document.getElementById(type + '-memo-' + i);
+  nameEl.value = '';
+  if (memoEl) memoEl.value = '';
+  selectedQuals[type][i] = new Set();
+  document.querySelectorAll(`.qual-chip[data-type="${type}"][data-slot="${i}"]`).forEach(c => c.classList.remove('active'));
+  updateReasonPreview(type, i);
+  onNameInput(type, i);
+}
+
+// ── Drawer (mobile) ──────────────────────────────────────────
+function openDrawer(type) {
+  document.getElementById(type + '-drawer-overlay').classList.add('open');
+  document.getElementById(type + '-drawer-panel').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  const mobileList = document.getElementById(type + '-cand-list-mobile');
+  if (mobileList && mobileList.children.length === 0) renderToContainer(type, '', mobileList);
+}
+function closeDrawer(type) {
+  document.getElementById(type + '-drawer-overlay').classList.remove('open');
+  document.getElementById(type + '-drawer-panel').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+// ── Candidate list ───────────────────────────────────────────
+function renderToContainer(type, filter, container) {
+  const data = candidateData[type];
+  const q = (filter || '').toLowerCase().trim();
+  container.innerHTML = '';
+  if (!data || data.length === 0) {
+    container.innerHTML = '<div style="text-align:center;color:#aaa;font-size:12px;padding:20px;">명단을 불러올 수 없습니다.</div>';
+    return;
+  }
+  data.forEach(group => {
+    const filtered = q ? group.names.filter(n => n.toLowerCase().includes(q)) : group.names;
+    if (!filtered.length) return;
+    const div = document.createElement('div');
+    div.className = 'cand-group';
+    const gridId = 'g' + Math.random().toString(36).substr(2,8);
+    div.innerHTML = `<div class="cand-group-title">${group.group}</div><div class="cand-grid" id="${gridId}"></div>`;
+    container.appendChild(div);
+    const grid = document.getElementById(gridId);
+    filtered.forEach(name => {
+      const chip = document.createElement('div');
+      chip.className = 'cand-chip' + (selectedNames[type].includes(name) ? ' selected' : '');
+      chip.dataset.name = name; chip.dataset.type = type; chip.dataset.group = group.group;
+      const hasPhoto = !!photos[name];
+      chip.innerHTML = `<span class="chip-avatar">${hasPhoto ? `<img src="${photos[name]}" alt="${name}">` : name.charAt(0)}</span>${name}`;
+      chip.addEventListener('click', () => {
+        onChipClick(type, name, group.group);
+        // close drawer on mobile after picking a name
+        if (window.innerWidth <= 750) closeDrawer(type);
+      });
+      grid.appendChild(chip);
+    });
+  });
+}
+
+function renderCandidateList(type, filter) {
+  // desktop list
+  const desktop = document.getElementById(type + '-cand-list');
+  if (desktop) renderToContainer(type, filter, desktop);
+  // mobile drawer list (only re-render if already open/populated)
+  const mobile = document.getElementById(type + '-cand-list-mobile');
+  if (mobile && mobile.children.length > 0) renderToContainer(type, filter, mobile);
+}
+
+function filterCandidates(type, val) { renderCandidateList(type, val); }
+
+// ── Chip click → modal ───────────────────────────────────────
+function onChipClick(type, name, groupLabel) {
+  modalCurrentName = name; modalCurrentType = type; modalCurrentGroup = groupLabel;
+  const hasPhoto = !!photos[name];
+  document.getElementById('modalAvatar').innerHTML = hasPhoto
+    ? `<img src="${photos[name]}" alt="${name}">` : `<span>${name.charAt(0)}</span>`;
+  document.getElementById('modalName').textContent = name;
+  document.getElementById('modalCat').textContent = groupLabel;
+  const alreadySelected = selectedNames[type].includes(name);
+  const addBtn = document.getElementById('modalAddBtn');
+  addBtn.textContent = alreadySelected ? '✓ 이미 추가됨 / Already Added' : '+ 추천에 추가 / Add to Nomination';
+  addBtn.style.background = alreadySelected ? '#2d6a4f' : '';
+  document.getElementById('photoModal').classList.add('show');
+}
+function closeModal() { document.getElementById('photoModal').classList.remove('show'); }
+function addFromModal() { if (modalCurrentName) addCandidate(modalCurrentType, modalCurrentName); closeModal(); }
+
+// ── Add / remove candidate ───────────────────────────────────
+function addCandidate(type, name) {
+  const max = type === 'elder' ? 3 : 15;
+  if (selectedNames[type].includes(name)) {
+    // deselect — find and clear the slot
+    for (let i = 1; i <= max; i++) {
+      const el = document.getElementById(type + '-name-' + i);
+      if (el && el.value === name) { clearNominee(type, i); break; }
     }
-
-    // ── 중복 체크 (연락처 기준) ──
-    var phone = data.submitterPhone.replace(/\D/g,''); // 숫자만 추출
-    var allData = sheet.getDataRange().getValues();
-    for (var r = 1; r < allData.length; r++) {
-      var existingPhone = (allData[r][2]||'').toString().replace(/\D/g,'');
-      if (existingPhone && existingPhone === phone) {
-        return corsResponse({
-          result: 'duplicate',
-          message: '이미 추천서를 제출하셨습니다.\nYou have already submitted a nomination form.'
-        });
-      }
+  } else {
+    let slot = -1;
+    for (let i = 1; i <= max; i++) {
+      const el = document.getElementById(type + '-name-' + i);
+      if (el && el.value.trim() === '') { slot = i; break; }
     }
-
-    // ── 데이터 저장 ──
-    var row = [new Date(), data.submitterName, data.submitterPhone, data.date];
-    var maxN = type === 'elder' ? 3 : 15;
-    for (var j = 1; j <= maxN; j++) {
-      var nominee = data.nominees.find(function(n){ return n.num === j; });
-      row.push(nominee ? nominee.name : '', nominee ? nominee.reason : '');
-    }
-    sheet.appendRow(row);
-
-    return corsResponse({ result: 'success' });
-
-  } catch(err) {
-    return corsResponse({ result:'error', message: err.toString() });
+    if (slot === -1) { alert(`최대 ${max}명까지 추천할 수 있습니다.\nMaximum ${max} nominations allowed.`); return; }
+    document.getElementById(type + '-name-' + slot).value = name;
+    onNameInput(type, slot);
+    document.getElementById(type + '-card-' + slot).scrollIntoView({ behavior:'smooth', block:'center' });
   }
 }
+
+function updateSelCount(type) {
+  const max = type === 'elder' ? 3 : 15;
+  let count = 0;
+  const names = [];
+  for (let i = 1; i <= max; i++) {
+    const el = document.getElementById(type + '-name-' + i);
+    const val = el ? el.value.trim() : '';
+    if (val) { count++; names.push(val); }
+    const num = document.getElementById(type + '-rownum-' + i);
+    if (num) num.className = 'nominee-num' + (val ? '' : '');
+  }
+  selectedNames[type] = names;
+  document.getElementById(type + '-sel-count').textContent = count + '/' + max;
+  // update FAB badge
+  const fab = document.getElementById(type + '-fab-count');
+  if (fab) fab.textContent = count;
+}
+
+function refreshChips(type) {
+  document.querySelectorAll(`.cand-chip[data-type="${type}"]`).forEach(chip => {
+    chip.classList.toggle('selected', selectedNames[type].includes(chip.dataset.name));
+  });
+}
+
+// ── Tab switch ───────────────────────────────────────────────
+function switchTab(type) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
+  document.getElementById('tab-' + type).classList.add('active');
+  document.getElementById('section-' + type).classList.add('active');
+}
+
+// ── Submit ───────────────────────────────────────────────────
+async function submitForm(type) {
+  const nameEl = document.getElementById(type + '-submitter-name');
+  const phoneEl = document.getElementById(type + '-submitter-phone');
+  const yearEl = document.getElementById(type + '-year');
+  const monthEl = document.getElementById(type + '-month');
+  const dayEl = document.getElementById(type + '-day');
+
+  if (!nameEl.value.trim()) { alert('추천인 성명을 입력해 주세요.\nPlease enter your name.'); nameEl.focus(); return; }
+  if (!phoneEl.value.trim()) { alert('연락처를 입력해 주세요.\nPlease enter your phone number.'); phoneEl.focus(); return; }
+
+  const max = type === 'elder' ? 3 : 15;
+  let nominees = [];
+  for (let i = 1; i <= max; i++) {
+    const n = document.getElementById(type + '-name-' + i).value.trim();
+    if (n) nominees.push({ num: i, name: n, reason: buildReasonText(type, i) });
+  }
+  if (!nominees.length) { alert('최소 1명 이상 추천해 주세요.\nPlease nominate at least one person.'); return; }
+
+  const date = `${yearEl.value || new Date().getFullYear()}년 ${monthEl.value || '__'}월 ${dayEl.value || '__'}일`;
+  const btn = document.querySelector('#section-' + type + ' .btn-submit');
+  btn.disabled = true;
+  btn.innerHTML = '제출 중... / Submitting...<span class="btn-sub">잠시만 기다려 주세요</span>';
+
+  try {
+    let submitResult = null;
+    try {
+      const submitRes = await fetch(SCRIPT_URL, {
+        method:'POST', mode:'cors',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ type, submitterName:nameEl.value.trim(), submitterPhone:phoneEl.value.trim(), date, nominees })
+      });
+      submitResult = await submitRes.json();
+    } catch(e) {
+      // CORS fallback: no-cors doesn't return body, treat as success
+      await fetch(SCRIPT_URL, {
+        method:'POST', mode:'no-cors',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({ type, submitterName:nameEl.value.trim(), submitterPhone:phoneEl.value.trim(), date, nominees })
+      });
+    }
+
+    // Handle duplicate
+    if (submitResult && submitResult.result === 'duplicate') {
+      alert('⚠️ ' + submitResult.message);
+      btn.disabled = false;
+      btn.innerHTML = '추천서 제출하기<span class="btn-sub">Submit Nomination Form</span>';
+      return;
+    }
+
+    const typeName = type==='elder' ? '시무 장로 / Ruling Elder' : '시무 안수집사 / Ruling Deacon';
+    let html = `<h4>📋 제출 요약 / Submission Summary</h4>`;
+    html += `<strong>직분:</strong> ${typeName}<br>`;
+    html += `<strong>추천인:</strong> ${nameEl.value.trim()} (${phoneEl.value.trim()})<br>`;
+    html += `<strong>날짜:</strong> ${date}<br><br>`;
+    html += `<strong>추천 명단 (${nominees.length}명):</strong><br>`;
+    nominees.forEach(n => {
+      html += `&nbsp;&nbsp;<strong>${n.num}. ${n.name}</strong>`;
+      if (n.reason) html += `<br>&nbsp;&nbsp;&nbsp;&nbsp;<em style="color:#666;font-size:12px;">${n.reason}</em>`;
+      html += '<br>';
+    });
+
+    document.getElementById('summaryCard').innerHTML = html;
+
+    // Set "go to other" button label based on what was just submitted
+    lastSubmittedType = type;
+    const otherType = type === 'elder' ? 'deacon' : 'elder';
+    const otherLabel = type === 'elder'
+      ? '시무 안수집사 추천하러 가기<span class="btn-next-sub">Go to Ruling Deacon Nomination →</span>'
+      : '시무 장로 추천하러 가기<span class="btn-next-sub">Go to Ruling Elder Nomination →</span>';
+    document.getElementById('btn-next-other').innerHTML = otherLabel;
+
+    document.getElementById('mainContent').style.display = 'none';
+    document.getElementById('successScreen').classList.add('show');
+    window.scrollTo(0, 0);
+  } catch(err) {
+    alert('오류가 발생했습니다. 다시 시도해 주세요.\nAn error occurred.\n\n' + err.message);
+    btn.disabled = false;
+    btn.innerHTML = '추천서 제출하기<span class="btn-sub">Submit Nomination Form</span>';
+  }
+}
+
+// ── Go to the other nomination type ─────────────────────────
+function goToOther() {
+  const otherType = lastSubmittedType === 'elder' ? 'deacon' : 'elder';
+  // show main content and switch to the other tab
+  document.getElementById('mainContent').style.display = 'block';
+  document.getElementById('successScreen').classList.remove('show');
+  switchTab(otherType);
+  // clear only the other form's nominees (keep submitter info)
+  const max = otherType === 'elder' ? 3 : 15;
+  selectedNames[otherType] = [];
+  selectedQuals[otherType] = {};
+  buildNomineeCards(otherType, max);
+  refreshChips(otherType);
+  updateSelCount(otherType);
+  window.scrollTo(0, 0);
+}
+
+// ── Reset (same form again) ───────────────────────────────────
+function resetForm() {
+  document.getElementById('mainContent').style.display = 'block';
+  document.getElementById('successScreen').classList.remove('show');
+  document.querySelectorAll('input[type="text"],input[type="tel"],textarea').forEach(el => el.value = '');
+  document.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
+  selectedNames = { elder:[], deacon:[] };
+  selectedQuals = { elder:{}, deacon:{} };
+  buildNomineeCards('elder', 3);
+  buildNomineeCards('deacon', 15);
+  refreshChips('elder'); refreshChips('deacon');
+  updateSelCount('elder'); updateSelCount('deacon');
+  // reset date dropdowns to today
+  const now = new Date();
+  ['elder','deacon'].forEach(t => {
+    document.getElementById(t + '-year').value = now.getFullYear();
+    document.getElementById(t + '-month').value = now.getMonth() + 1;
+    document.getElementById(t + '-day').value = now.getDate();
+  });
+  window.scrollTo(0, 0);
+}
+
+// ── Load candidates + quals from Sheets ─────────────────────
+async function loadAll(type) {
+  // Load candidates
+  try {
+    const res = await fetch(SCRIPT_URL + '?action=candidates&type=' + type);
+    const json = await res.json();
+    candidateData[type] = (json.result === 'success' && json.data && json.data.length > 0)
+      ? json.data : FALLBACK[type];
+  } catch(e) {
+    candidateData[type] = FALLBACK[type];
+  }
+
+  // Load qualifications
+  try {
+    const res = await fetch(SCRIPT_URL + '?action=quals&type=' + type);
+    const json = await res.json();
+    QUALS[type] = (json.result === 'success' && json.data && json.data.length > 0)
+      ? json.data : QUALS_FALLBACK[type];
+  } catch(e) {
+    QUALS[type] = QUALS_FALLBACK[type];
+  }
+
+  // Rebuild UI with loaded data
+  buildQualLists(type);
+  buildNomineeCards(type, type === 'elder' ? 3 : 15);
+  const desktop = document.getElementById(type + '-cand-list');
+  if (desktop) renderToContainer(type, '', desktop);
+}
+
+// ── Init ─────────────────────────────────────────────────────
+// Quals and nominee cards will be built after Sheets data loads
+// Show loading placeholders for qual lists
+['elder','deacon'].forEach(t => {
+  const ul = document.getElementById(t + '-qual-list');
+  if (ul) ul.innerHTML = '<li style="color:rgba(255,255,255,0.4);font-size:12px;padding-left:0;">자격 기준 불러오는 중... / Loading qualifications...</li>';
+});
+
+// Populate year / day dropdowns
+function buildYearSelect(id) {
+  const sel = document.getElementById(id);
+  const now = new Date().getFullYear();
+  for (let y = now; y >= now - 3; y--) {
+    const opt = document.createElement('option');
+    opt.value = y; opt.textContent = y + '년';
+    if (y === now) opt.selected = true;
+    sel.appendChild(opt);
+  }
+}
+function buildDaySelect(id) {
+  const sel = document.getElementById(id);
+  const today = new Date().getDate();
+  sel.innerHTML = '<option value="">Day/일</option>';
+  for (let d = 1; d <= 31; d++) {
+    const opt = document.createElement('option');
+    opt.value = d; opt.textContent = d + '일';
+    if (d === today) opt.selected = true;
+    sel.appendChild(opt);
+  }
+}
+['elder','deacon'].forEach(t => {
+  buildYearSelect(t + '-year');
+  buildDaySelect(t + '-day');
+  // pre-select current month
+  const now = new Date();
+  const mSel = document.getElementById(t + '-month');
+  if (mSel) mSel.value = now.getMonth() + 1;
+});
+loadAll('elder');
+loadAll('deacon');
+document.getElementById('photoModal').addEventListener('click', function(e){ if(e.target===this) closeModal(); });
+</script>
+</body>
+</html>
