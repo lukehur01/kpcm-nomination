@@ -307,6 +307,11 @@
           </div>
 
           <div class="card">
+            <div class="card-title">장로 추천 명단 / Elder Nominees <span style="font-weight:400;color:var(--text-light);font-size:12px;">(최대 3명)</span><span class="selected-count" id="elder-sel-count">0/3</span></div>
+            <div id="elder-nominees"></div>
+          </div>
+
+          <div class="card" id="elder-submitter-card">
             <div class="card-title">추천인 정보 / Submitter Information</div>
             <div class="field-row">
               <div class="field"><label>추천인 성명 <span>/ Name</span><span class="required-star">*</span></label><input type="text" id="elder-submitter-name" placeholder="홍길동 / Hong Gil Dong"></div>
@@ -319,11 +324,6 @@
                 <select id="elder-day"></select>
               </div>
             </div>
-          </div>
-
-          <div class="card">
-            <div class="card-title">장로 추천 명단 / Elder Nominees <span style="font-weight:400;color:var(--text-light);font-size:12px;">(최대 3명)</span><span class="selected-count" id="elder-sel-count">0/3</span></div>
-            <div id="elder-nominees"></div>
           </div>
 
           <div class="notice-box"><strong>※ 추천인의 성명과 연락처가 없는 추천서는 무효 처리됩니다.</strong><br><em>Forms without your name and contact information will be invalidated.</em><br>※ 추천 사유는 가능하면 적어주시기 바랍니다. <em>"Reasons for recommendation" is preferred.</em></div>
@@ -380,6 +380,11 @@
           </div>
 
           <div class="card">
+            <div class="card-title">안수집사 추천 명단 / Deacon Nominees <span style="font-weight:400;color:var(--text-light);font-size:12px;">(최소 1명, 최대 15명)</span><span class="selected-count" id="deacon-sel-count">0/15</span></div>
+            <div id="deacon-nominees"></div>
+          </div>
+
+          <div class="card" id="deacon-submitter-card">
             <div class="card-title">추천인 정보 / Submitter Information</div>
             <div class="field-row">
               <div class="field"><label>추천인 성명 <span>/ Name</span><span class="required-star">*</span></label><input type="text" id="deacon-submitter-name" placeholder="홍길동 / Hong Gil Dong"></div>
@@ -394,11 +399,6 @@
             </div>
           </div>
 
-          <div class="card">
-            <div class="card-title">안수집사 추천 명단 / Deacon Nominees <span style="font-weight:400;color:var(--text-light);font-size:12px;">(최소 1명, 최대 15명)</span><span class="selected-count" id="deacon-sel-count">0/15</span></div>
-            <div id="deacon-nominees"></div>
-          </div>
-
           <div class="notice-box"><strong>※ 추천인의 성명과 연락처가 없는 추천서는 무효 처리됩니다.</strong><br><em>Forms without your name and contact information will be invalidated.</em><br>※ 추천 사유는 가능하면 적어주시기 바랍니다. <em>"Reasons for recommendation" is preferred.</em></div>
           <div class="submit-area"><button class="btn-submit" onclick="submitForm('deacon')">추천서 제출하기<span class="btn-sub">Submit Nomination Form</span></button></div>
         </div>
@@ -408,16 +408,35 @@
   </div>
 </div>
 
-<!-- SUCCESS -->
+<!-- SUCCESS (one form submitted) -->
 <div class="success-screen" id="successScreen">
   <div class="success-icon">✓</div>
-  <h2>추천서가 제출되었습니다</h2>
+  <h2 id="success-title">추천서가 제출되었습니다</h2>
   <p>감사합니다. 귀하의 추천서가 성공적으로 접수되었습니다.<br><em style="font-size:13px;color:#999;">Thank you. Your nomination form has been successfully submitted.</em></p>
   <div class="summary-card" id="summaryCard"></div>
   <div style="display:flex;flex-direction:column;align-items:center;gap:12px;margin-top:24px;">
     <button class="btn-next" id="btn-next-other" onclick="goToOther()"></button>
-    <button class="btn-reset" onclick="resetForm()">같은 직분 다시 제출 / Submit Same Again</button>
+    <button class="btn-reset" onclick="resetForm()">같은 직분 다시 작성 / Rewrite Same Form</button>
   </div>
+</div>
+
+<!-- ALL DONE screen -->
+<div class="success-screen" id="allDoneScreen">
+  <div class="success-icon" style="background:#e8eaf6;font-size:36px;">🙏</div>
+  <h2 style="color:var(--navy);font-size:24px;margin-bottom:12px;">모두 추천하였습니다!</h2>
+  <p style="font-size:15px;">장로 및 안수집사 추천서를<br>모두 성공적으로 제출하셨습니다.<br><em style="font-size:13px;color:#aaa;">You have completed both nomination forms.<br>Elder &amp; Ruling Deacon nominations submitted.</em></p>
+  <div style="margin:28px auto;padding:20px 28px;background:var(--navy);border-radius:14px;max-width:400px;">
+    <div style="color:var(--gold-light);font-family:'Noto Serif KR',serif;font-size:13px;margin-bottom:12px;">제출 완료 / Submitted</div>
+    <div id="alldone-elder" style="display:flex;align-items:center;gap:10px;color:white;font-size:14px;margin-bottom:8px;">
+      <span style="width:22px;height:22px;background:var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;">✓</span>
+      시무 장로 추천서 / Ruling Elder Nomination
+    </div>
+    <div id="alldone-deacon" style="display:flex;align-items:center;gap:10px;color:white;font-size:14px;">
+      <span style="width:22px;height:22px;background:var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;">✓</span>
+      시무 안수집사 추천서 / Ruling Deacon Nomination
+    </div>
+  </div>
+  <p style="font-size:13px;color:var(--text-light);">추천에 참여해 주셔서 감사합니다.<br><em>Thank you for your participation in the nomination process.</em></p>
 </div>
 
 <!-- MODAL -->
@@ -488,7 +507,8 @@ const photos = {}; // 사진 추가 시: photos['이름'] = 'URL';
 // ── State ────────────────────────────────────────────────────
 let candidateData = { elder: [], deacon: [] };
 let selectedNames = { elder: [], deacon: [] };
-let lastSubmittedType = 'elder'; // track which form was last submitted
+let lastSubmittedType = 'elder';
+let submittedForms = { elder: false, deacon: false }; // track which forms completed
 // selectedQuals[type][slotIndex] = Set of qual indices (1-based)
 let selectedQuals = { elder: {}, deacon: {} };
 let modalCurrentName = '', modalCurrentType = '', modalCurrentGroup = '';
@@ -795,17 +815,26 @@ async function submitForm(type) {
 
     document.getElementById('summaryCard').innerHTML = html;
 
-    // Set "go to other" button label based on what was just submitted
     lastSubmittedType = type;
+    submittedForms[type] = true;
+
+    document.getElementById('mainContent').style.display = 'none';
+    window.scrollTo(0, 0);
+
+    // Both forms done → show all-done screen
+    if (submittedForms.elder && submittedForms.deacon) {
+      document.getElementById('successScreen').classList.remove('show');
+      document.getElementById('allDoneScreen').classList.add('show');
+      return;
+    }
+
+    // One form done → show success with "go to other" button
     const otherType = type === 'elder' ? 'deacon' : 'elder';
     const otherLabel = type === 'elder'
       ? '시무 안수집사 추천하러 가기<span class="btn-next-sub">Go to Ruling Deacon Nomination →</span>'
       : '시무 장로 추천하러 가기<span class="btn-next-sub">Go to Ruling Elder Nomination →</span>';
     document.getElementById('btn-next-other').innerHTML = otherLabel;
-
-    document.getElementById('mainContent').style.display = 'none';
     document.getElementById('successScreen').classList.add('show');
-    window.scrollTo(0, 0);
   } catch(err) {
     alert('오류가 발생했습니다. 다시 시도해 주세요.\nAn error occurred.\n\n' + err.message);
     btn.disabled = false;
@@ -815,12 +844,26 @@ async function submitForm(type) {
 
 // ── Go to the other nomination type ─────────────────────────
 function goToOther() {
-  const otherType = lastSubmittedType === 'elder' ? 'deacon' : 'elder';
-  // show main content and switch to the other tab
+  const fromType = lastSubmittedType;
+  const otherType = fromType === 'elder' ? 'deacon' : 'elder';
+
+  // Copy submitter info (name, phone, date) to the other form
+  ['submitter-name','submitter-phone'].forEach(field => {
+    const from = document.getElementById(fromType + '-' + field);
+    const to   = document.getElementById(otherType + '-' + field);
+    if (from && to) to.value = from.value;
+  });
+  ['year','month','day'].forEach(field => {
+    const from = document.getElementById(fromType + '-' + field);
+    const to   = document.getElementById(otherType + '-' + field);
+    if (from && to) to.value = from.value;
+  });
+
   document.getElementById('mainContent').style.display = 'block';
   document.getElementById('successScreen').classList.remove('show');
   switchTab(otherType);
-  // clear only the other form's nominees (keep submitter info)
+
+  // Reset nominees on the other form only
   const max = otherType === 'elder' ? 3 : 15;
   selectedNames[otherType] = [];
   selectedQuals[otherType] = {};
@@ -830,18 +873,21 @@ function goToOther() {
   window.scrollTo(0, 0);
 }
 
-// ── Reset (same form again) ───────────────────────────────────
+// ── Reset (same form again) ──────────────────────────────────
 function resetForm() {
+  // Reset only the last submitted form's nominees; keep submitter info
   document.getElementById('mainContent').style.display = 'block';
   document.getElementById('successScreen').classList.remove('show');
-  document.querySelectorAll('input[type="text"],input[type="tel"],textarea').forEach(el => el.value = '');
-  document.querySelectorAll('select').forEach(el => el.selectedIndex = 0);
-  selectedNames = { elder:[], deacon:[] };
-  selectedQuals = { elder:{}, deacon:{} };
-  buildNomineeCards('elder', 3);
-  buildNomineeCards('deacon', 15);
-  refreshChips('elder'); refreshChips('deacon');
-  updateSelCount('elder'); updateSelCount('deacon');
+  submittedForms[lastSubmittedType] = false;
+  // Clear nominees only for the form being restarted
+  const t = lastSubmittedType;
+  const max = t === 'elder' ? 3 : 15;
+  selectedNames[t] = [];
+  selectedQuals[t] = {};
+  buildNomineeCards(t, max);
+  refreshChips(t);
+  updateSelCount(t);
+  switchTab(t);
   // reset date dropdowns to today
   const now = new Date();
   ['elder','deacon'].forEach(t => {
