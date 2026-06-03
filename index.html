@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>KPCM 임직자 추천서 / Nomination Form</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600;700&family=Noto+Sans+KR:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
@@ -109,7 +109,8 @@
   .panel-body { padding:14px; max-height:75vh; overflow-y:auto; }
   .panel-body::-webkit-scrollbar { width:4px; }
   .panel-body::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
-  .cand-search { width:100%; padding:8px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; font-family:'Noto Sans KR',sans-serif; margin-bottom:12px; outline:none; }
+  .cand-search { width:100%; padding:8px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:16px; font-family:'Noto Sans KR',sans-serif; margin-bottom:12px; outline:none; }
+  @media(min-width:751px){ .cand-search { font-size:13px; } }
   .cand-search:focus { border-color:var(--navy); }
   .cand-group { margin-bottom:14px; }
   .cand-group-title { font-size:10.5px; font-weight:600; color:var(--text-light); text-transform:uppercase; letter-spacing:0.4px; margin-bottom:7px; padding-bottom:4px; border-bottom:1px solid var(--border); }
@@ -139,7 +140,8 @@
   .field { display:flex; flex-direction:column; gap:5px; }
   label { font-size:12px; font-weight:500; color:var(--navy); }
   label span { font-size:11px; color:var(--text-light); font-weight:400; margin-left:4px; }
-  input[type="text"], input[type="tel"], textarea, select { padding:9px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:13px; font-family:'Noto Sans KR',sans-serif; color:var(--text); background:var(--cream); transition:border-color 0.2s,background 0.2s; outline:none; width:100%; }
+  input[type="text"], input[type="tel"], textarea, select { padding:9px 12px; border:1.5px solid var(--border); border-radius:8px; font-size:16px; font-family:'Noto Sans KR',sans-serif; color:var(--text); background:var(--cream); transition:border-color 0.2s,background 0.2s; outline:none; width:100%; }
+  @media(min-width:751px){ input[type="text"], input[type="tel"], textarea, select { font-size:13px; } }
   input:focus, textarea:focus, select:focus { border-color:var(--navy); background:var(--white); }
   .date-row { display:flex; gap:8px; }
   .date-row select { flex:1; min-width:70px; }
@@ -161,7 +163,8 @@
   .nominee-card.has-name .nominee-card-header { background:#eef1f7; border-bottom-color:#c5cde3; }
   .nominee-num { width:26px; height:26px; border-radius:50%; background:var(--border); color:var(--navy); font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
   .nominee-card.has-name .nominee-num { background:var(--navy); color:var(--white); }
-  .nominee-name-input { flex:1; border:none; background:transparent; font-size:14px; font-weight:600; font-family:'Noto Sans KR',sans-serif; color:var(--navy); outline:none; padding:0; }
+  .nominee-name-input { flex:1; border:none; background:transparent; font-size:16px; font-weight:600; font-family:'Noto Sans KR',sans-serif; color:var(--navy); outline:none; padding:0; }
+  @media(min-width:751px){ .nominee-name-input { font-size:14px; } }
   .nominee-name-input::placeholder { font-weight:400; color:#aaa; font-size:13px; }
   .nominee-clear { background:none; border:none; color:#aaa; cursor:pointer; font-size:16px; padding:2px 4px; line-height:1; }
   .nominee-clear:hover { color:#c0392b; }
@@ -263,7 +266,7 @@
   .picker-search-wrap { padding:12px 14px 8px; flex-shrink:0; border-bottom:1px solid var(--border); }
   .picker-search {
     width:100%; padding:9px 14px; border:1.5px solid var(--border);
-    border-radius:8px; font-size:14px; font-family:'Noto Sans KR',sans-serif;
+    border-radius:8px; font-size:16px; font-family:'Noto Sans KR',sans-serif;
     outline:none; background:var(--cream);
   }
   .picker-search:focus { border-color:var(--navy); background:var(--white); }
