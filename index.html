@@ -599,6 +599,19 @@ const photos = new Proxy({}, {
   get: (_, name) => PHOTO_BASE + encodeURIComponent(name) + '.jpg'
 });
 
+// img onerror: try .JPG if .jpg fails, then fallback to initial
+function tryPhotoFallback(img, name) {
+  const src = img.src;
+  if (src.endsWith('.jpg')) {
+    // try uppercase
+    img.src = src.replace(/\.jpg$/, '.JPG');
+  } else {
+    // both failed → show initial
+    const initial = name ? name.charAt(0) : '?';
+    img.parentNode.innerHTML = initial;
+  }
+}
+
 // Try .jpg first, fallback to .JPG, then show initial
 function loadPhotoImg(name, targetEl) {
   const urlLower = PHOTO_BASE + encodeURIComponent(name) + '.jpg';
@@ -804,9 +817,10 @@ function filterCandidates(type, val) { renderCandidateList(type, val); }
 // ── Chip click → modal ───────────────────────────────────────
 function onChipClick(type, name, groupLabel) {
   modalCurrentName = name; modalCurrentType = type; modalCurrentGroup = groupLabel;
-  const hasPhoto = !!photos[name];
-  document.getElementById('modalAvatar').innerHTML = hasPhoto
-    ? `<img src="${photos[name]}" alt="${name}">` : `<span>${name.charAt(0)}</span>`;
+  const mPhotoUrl = photos[name];
+  const safeName = name.replace(/'/g, "\\'");
+  document.getElementById('modalAvatar').innerHTML =
+    `<img src="${mPhotoUrl}" alt="${name}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="tryPhotoFallback(this,'${safeName}')">`;
   document.getElementById('modalName').textContent = name;
   document.getElementById('modalCat').textContent = groupLabel;
   const alreadySelected = selectedNames[type].includes(name);
