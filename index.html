@@ -311,7 +311,7 @@
   <div class="header-cross">✦ ✦ ✦</div>
   <h1>마이아미 한인 장로 교회<span>Korean Presbyterian Church of Miami</span></h1>
   <div class="header-divider"></div>
-  <div class="header-sub">임직자 추천서 &nbsp;|&nbsp; Nomination Form</div>
+  <div class="header-sub">2027 임직자 추천서 &nbsp;|&nbsp; 2027 Nomination Form</div>
 </div>
 
 <div id="mainContent">
@@ -551,26 +551,26 @@ let QUALS = { elder: [], deacon: [] };
 
 const QUALS_FALLBACK = {
   elder: [
-    { ko:'교회의 모든 공 예배에 잘 참석하시는 성도', en:'Participates well in worship services' },
-    { ko:'교회의 모든 교육 훈련에 잘 참석하시는 성도', en:'Participates well in church education programs' },
-    { ko:'교우들을 열심히 섬기며 솔선수범하여 봉사하시는 성도', en:'Serves others well and takes initiatives' },
-    { ko:'성경적 헌금 생활을 하시는 성도', en:'Gives offering biblically' },
-    { ko:'선교와 전도에 열심인 성도', en:'Eager for missions and evangelism' },
-    { ko:'성경적인 임직자의 자격을 가지고 교회를 대표하기에 부족함이 없는 성도', en:'Has biblical qualifications and represents the church well' },
-    { ko:'가정에서 배우자와 자녀로부터 존경받는 성도', en:'Respected by spouse and children at home' },
-    { ko:'말과 행동이 겸손하며 교회와 세상 가운데 정직히 행하여 본이 되는 성도', en:'Humble and a role model in and outside the church' },
-    { ko:'안수집사·협동장로·휴무장로로서 3년 이상 출석하신 분', en:'Attended KPCM ≥3 years as Ruling Deacon / Cooperative or Non-Ruling Elder' }
+    { ko:'교회의 모든 공 예배에 참석하시는 분', en:'One who participates well in worship services' },
+    { ko:'교회의 모든 교육 훈련에 잘 참석하시는 분', en:'One who participates well in church education programs' },
+    { ko:'교우들을 열심히 섬기며 솔선수범하여 봉사하시는 분', en:'One who serves others well and takes initiatives in church matters' },
+    { ko:'성경적 헌금 생활을 하시는 분', en:'One who gives offering biblically' },
+    { ko:'선교와 전도에 열심인 분', en:'One who is eager for missions and evangelism' },
+    { ko:'성경적인 장로의 자격을 가지고 교회를 대표하기에 부족함이 없는 분', en:'One who has biblical qualifications for church leadership' },
+    { ko:'가정에서 배우자와 자녀로부터 존경받는 분', en:'One who has the respect of his/her spouse and children at home' },
+    { ko:'말과 행동이 겸손하며 교회와 세상 가운데 정직히 행하여 본이 되는 분', en:'One who is humble and conducts himself/herself in the same way both in and outside church' },
+    { ko:'5년이상 교회에 출석하신 분으로 본 교회의 시무 안수집사 3년 이상을 섬기신 분', en:'One who has attended KPCM at least 5 years & served as Deacon for at least 3 years' }
   ],
   deacon: [
-    { ko:'교회의 모든 공 예배에 잘 참석하시는 성도', en:'Participates well in worship services' },
-    { ko:'교회의 모든 교육 훈련에 잘 참석하시는 성도', en:'Participates well in church education programs' },
-    { ko:'교우들을 열심히 섬기며 솔선수범하여 봉사하시는 성도', en:'Serves others well and takes initiatives' },
-    { ko:'성경적 헌금 생활을 하시는 성도', en:'Gives offering biblically' },
-    { ko:'선교와 전도에 열심인 성도', en:'Eager for missions and evangelism' },
-    { ko:'성경적인 임직자의 자격을 가지고 교회를 대표하기에 부족함이 없는 성도', en:'Has biblical qualifications and represents the church well' },
-    { ko:'가정에서 배우자와 자녀로부터 존경받는 성도', en:'Respected by spouse and children at home' },
-    { ko:'말과 행동이 겸손하며 교회와 세상 가운데 정직히 행하여 본이 되는 성도', en:'Humble and a role model in and outside the church' },
-    { ko:'서리집사·협동안수집사·휴무집사로서 3년 이상 출석하신 성도', en:'Attended KPCM ≥3 years as Deputy / Cooperative / Non-Ruling Deacon' }
+    { ko:'교회의 모든 공 예배에 잘 참석하시는 분', en:'One who participates well in worship services' },
+    { ko:'교회의 모든 교육 훈련에 잘 참석하시는 분', en:'One who participates well in church education programs' },
+    { ko:'교우들을 열심히 섬기며 솔선수범하여 봉사하시는 분', en:'One who serves others well and takes initiatives in church matters' },
+    { ko:'성경적 헌금 생활을 하시는 분', en:'One who gives offering biblically' },
+    { ko:'선교와 전도에 열심인 분', en:'One who is eager for missions and evangelism' },
+    { ko:'성경적인 집사의 자격을 가지고 교회를 대표하기에 부족함이 없는 분', en:'One who has biblical qualifications for church leadership' },
+    { ko:'가정에서 배우자와 자녀로부터 존경받는 분', en:'One who has the respect of his/her spouse and children at home' },
+    { ko:'말과 행동이 겸손하며 교회와 세상 가운데 정직히 행하여 본이 되는 분', en:'One who is humble and conducts himself/herself in the same way both in and outside church' },
+    { ko:'세례 등록 교인으로서 3년이상 교회에 출석하신 분', en:'One who has attended KPCM at least 3 years' }
   ]
 };
 
@@ -594,7 +594,10 @@ const FALLBACK = {
   ]
 };
 
-const photos = {}; // 사진 추가 시: photos['이름'] = 'URL';
+const PHOTO_BASE = 'https://lukehur01.github.io/kpcm-nomination/photos/';
+const photos = new Proxy({}, {
+  get: (_, name) => PHOTO_BASE + encodeURIComponent(name) + '.jpg'
+});
 
 // ── State ────────────────────────────────────────────────────
 let candidateData = { elder: [], deacon: [] };
@@ -755,8 +758,8 @@ function renderToContainer(type, filter, container) {
       const chip = document.createElement('div');
       chip.className = 'cand-chip' + (selectedNames[type].includes(name) ? ' selected' : '');
       chip.dataset.name = name; chip.dataset.type = type; chip.dataset.group = group.group;
-      const hasPhoto = !!photos[name];
-      chip.innerHTML = `<span class="chip-avatar">${hasPhoto ? `<img src="${photos[name]}" alt="${name}">` : name.charAt(0)}</span>${name}`;
+      const photoUrl = photos[name];
+      chip.innerHTML = `<span class="chip-avatar"><img src="${photoUrl}" alt="${name}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.parentNode.innerHTML='${name.charAt(0)}'"></span>${name}`;
       chip.addEventListener('click', () => {
         onChipClick(type, name, group.group);
         // close drawer on mobile after picking a name
@@ -895,7 +898,8 @@ function renderPickerList(filter) {
       const isSelected = selectedNames[type].includes(name);
       const chip = document.createElement('div');
       chip.className = 'picker-chip' + (isSelected ? ' selected' : '');
-      chip.innerHTML = `<span class="p-avatar">${name.charAt(0)}</span>${name}${isSelected ? ' ✓' : ''}`;
+      const pUrl = photos[name];
+      chip.innerHTML = `<span class="p-avatar"><img src="${pUrl}" alt="${name}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.parentNode.innerHTML='${name.charAt(0)}'"></span>${name}${isSelected ? ' ✓' : ''}`;
       chip.addEventListener('click', () => selectFromPicker(name));
       grid.appendChild(chip);
       total++;
