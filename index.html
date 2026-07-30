@@ -599,6 +599,22 @@ const photos = new Proxy({}, {
   get: (_, name) => PHOTO_BASE + encodeURIComponent(name) + '.jpg'
 });
 
+// Try .jpg first, fallback to .JPG, then show initial
+function loadPhotoImg(name, targetEl) {
+  const urlLower = PHOTO_BASE + encodeURIComponent(name) + '.jpg';
+  const urlUpper = PHOTO_BASE + encodeURIComponent(name) + '.JPG';
+  const initial = name.charAt(0);
+  const img = new Image();
+  img.onload = () => { targetEl.innerHTML = `<img src="${urlLower}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`; };
+  img.onerror = () => {
+    const img2 = new Image();
+    img2.onload = () => { targetEl.innerHTML = `<img src="${urlUpper}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`; };
+    img2.onerror = () => { targetEl.innerHTML = initial; };
+    img2.src = urlUpper;
+  };
+  img.src = urlLower;
+}
+
 // ── State ────────────────────────────────────────────────────
 let candidateData = { elder: [], deacon: [] };
 let selectedNames = { elder: [], deacon: [] };
@@ -758,8 +774,12 @@ function renderToContainer(type, filter, container) {
       const chip = document.createElement('div');
       chip.className = 'cand-chip' + (selectedNames[type].includes(name) ? ' selected' : '');
       chip.dataset.name = name; chip.dataset.type = type; chip.dataset.group = group.group;
-      const photoUrl = photos[name];
-      chip.innerHTML = `<span class="chip-avatar"><img src="${photoUrl}" alt="${name}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.parentNode.innerHTML='${name.charAt(0)}'"></span>${name}`;
+      chip.innerHTML = `<span class="chip-avatar" id="av-${CSS.escape(name)}">${name.charAt(0)}</span>${name}`;
+      // async load photo after render
+      setTimeout(() => {
+        const av = chip.querySelector('.chip-avatar');
+        if (av) loadPhotoImg(name, av);
+      }, 0);
       chip.addEventListener('click', () => {
         onChipClick(type, name, group.group);
         // close drawer on mobile after picking a name
@@ -898,8 +918,11 @@ function renderPickerList(filter) {
       const isSelected = selectedNames[type].includes(name);
       const chip = document.createElement('div');
       chip.className = 'picker-chip' + (isSelected ? ' selected' : '');
-      const pUrl = photos[name];
-      chip.innerHTML = `<span class="p-avatar"><img src="${pUrl}" alt="${name}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.parentNode.innerHTML='${name.charAt(0)}'"></span>${name}${isSelected ? ' ✓' : ''}`;
+      chip.innerHTML = `<span class="p-avatar">${name.charAt(0)}</span>${name}${isSelected ? ' ✓' : ''}`;
+      setTimeout(() => {
+        const av = chip.querySelector('.p-avatar');
+        if (av) loadPhotoImg(name, av);
+      }, 0);
       chip.addEventListener('click', () => selectFromPicker(name));
       grid.appendChild(chip);
       total++;
