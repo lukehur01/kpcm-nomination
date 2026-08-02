@@ -241,6 +241,102 @@
   .modal-btn.secondary { background:transparent; border:2px solid var(--border); color:var(--text); }
   .modal-btn.secondary:hover { border-color:var(--navy); color:var(--navy); }
 
+  /* REASON GUIDE POPUP */
+  .reason-guide-overlay {
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:1000;
+    align-items:center; justify-content:center;
+  }
+  .reason-guide-overlay.open { display:flex; }
+  .reason-guide-box {
+    background:var(--white); border-radius:20px; width:92%; max-width:480px;
+    overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.25);
+    animation:slideUp 0.3s cubic-bezier(0.32,0.72,0,1);
+  }
+  @keyframes slideUp { from{transform:translateY(40px);opacity:0} to{transform:translateY(0);opacity:1} }
+  .rg-header {
+    background:var(--navy); padding:20px 24px 18px;
+    display:flex; align-items:flex-start; justify-content:space-between;
+  }
+  .rg-header-icon { font-size:28px; margin-right:12px; flex-shrink:0; margin-top:2px; }
+  .rg-header-text h3 {
+    font-family:'Noto Serif KR',serif; color:var(--gold-light);
+    font-size:16px; margin-bottom:4px;
+  }
+  .rg-header-text p { color:rgba(255,255,255,0.55); font-size:11.5px; line-height:1.6; }
+  .rg-close { background:none; border:none; color:rgba(255,255,255,0.6); font-size:20px; cursor:pointer; flex-shrink:0; }
+  .rg-name-banner {
+    background:linear-gradient(135deg,#eef1f7,#f8f6ff);
+    border-bottom:1px solid var(--border);
+    padding:14px 24px; display:flex; align-items:center; gap:12px;
+  }
+  .rg-name-avatar {
+    width:44px; height:44px; border-radius:50%; border:2px solid var(--gold);
+    overflow:hidden; flex-shrink:0; background:var(--navy);
+    display:flex; align-items:center; justify-content:center;
+    color:white; font-size:16px; font-weight:700;
+  }
+  .rg-name-avatar img { width:100%; height:100%; object-fit:cover; }
+  .rg-name-label { font-size:11px; color:var(--text-light); margin-bottom:2px; }
+  .rg-name-value { font-family:'Noto Serif KR',serif; font-size:18px; font-weight:700; color:var(--navy); }
+  .rg-body { padding:20px 24px; }
+  .rg-section-title {
+    font-size:11px; font-weight:700; color:var(--text-light);
+    letter-spacing:0.8px; text-transform:uppercase; margin-bottom:10px;
+    display:flex; align-items:center; gap:6px;
+  }
+  .rg-section-title::after { content:''; flex:1; height:1px; background:var(--border); }
+  .rg-desc {
+    background:#f8f6ff; border:1px solid #e0d9f5; border-radius:10px;
+    padding:12px 16px; margin-bottom:16px; font-size:12.5px;
+    color:#444; line-height:1.75;
+  }
+  .rg-desc strong { color:var(--navy); }
+  .rg-desc em { display:block; color:#888; font-style:normal; font-size:11.5px; margin-top:3px; }
+  .rg-qual-grid { display:flex; flex-direction:column; gap:6px; margin-bottom:16px; max-height:240px; overflow-y:auto; }
+  .rg-qual-grid::-webkit-scrollbar { width:4px; }
+  .rg-qual-grid::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+  .rg-qual-item {
+    display:flex; align-items:flex-start; gap:8px; padding:8px 12px;
+    border:1.5px solid var(--border); border-radius:8px; background:var(--warm-gray);
+    cursor:pointer; transition:all 0.15s; font-size:12px; line-height:1.5;
+  }
+  .rg-qual-item:hover { border-color:var(--gold); background:#fff8e7; }
+  .rg-qual-item.active { border-color:var(--navy); background:var(--navy); color:white; }
+  .rg-qual-num {
+    width:20px; height:20px; border-radius:50%; background:var(--gold);
+    color:var(--navy); font-size:10px; font-weight:700;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px;
+  }
+  .rg-qual-item.active .rg-qual-num { background:var(--gold-light); }
+  .rg-qual-text { flex:1; }
+  .rg-qual-en { display:block; font-size:10.5px; opacity:0.55; margin-top:1px; font-style:italic; }
+  .rg-qual-item.active .rg-qual-en { opacity:0.7; }
+  .rg-memo-label { font-size:11.5px; color:var(--text-light); margin-bottom:6px; }
+  .rg-memo {
+    width:100%; padding:10px 12px; border:1.5px solid var(--border); border-radius:8px;
+    font-size:14px; font-family:'Noto Sans KR',sans-serif; color:var(--text);
+    background:var(--cream); outline:none; resize:vertical; min-height:72px;
+    line-height:1.6; transition:border-color 0.2s;
+  }
+  .rg-memo:focus { border-color:var(--navy); background:white; }
+  .rg-memo::placeholder { font-size:11.5px; color:#bbb; line-height:1.7; }
+  .rg-footer {
+    padding:14px 24px 20px; display:flex; gap:10px; border-top:1px solid var(--border);
+    background:var(--cream);
+  }
+  .rg-btn-skip {
+    flex:1; padding:12px; border:2px solid var(--border); background:transparent;
+    color:var(--text-light); border-radius:10px; font-size:13px;
+    font-family:'Noto Sans KR',sans-serif; cursor:pointer; transition:all 0.2s;
+  }
+  .rg-btn-skip:hover { border-color:var(--navy); color:var(--navy); }
+  .rg-btn-save {
+    flex:2; padding:12px; background:var(--navy); color:white;
+    border:none; border-radius:10px; font-size:14px; font-weight:600;
+    font-family:'Noto Sans KR',sans-serif; cursor:pointer; transition:background 0.2s;
+  }
+  .rg-btn-save:hover { background:#243560; }
+
   /* NAME PICKER POPUP */
   .name-picker-overlay {
     display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:800;
@@ -509,6 +605,59 @@
     </div>
   </div>
   <p style="font-size:13px;color:var(--text-light);">추천에 참여해 주셔서 감사합니다.<br><em>Thank you for your participation in the nomination process.</em></p>
+</div>
+
+<!-- REASON GUIDE POPUP -->
+<div class="reason-guide-overlay" id="reasonGuideOverlay">
+  <div class="reason-guide-box">
+    <div class="rg-header">
+      <div class="rg-header-icon">📋</div>
+      <div class="rg-header-text">
+        <h3>추천 사유를 선택해 주세요</h3>
+        <p>해당 항목을 <strong style="color:var(--gold-light)">모두 선택</strong>해 주세요 · Please select <strong style="color:var(--gold-light)">all that apply</strong></p>
+      </div>
+      <button class="rg-close" onclick="closeReasonGuide(true)">✕</button>
+    </div>
+
+    <div class="rg-name-banner">
+      <div class="rg-name-avatar" id="rg-avatar"></div>
+      <div>
+        <div class="rg-name-label">추천 대상자 / Nominee</div>
+        <div class="rg-name-value" id="rg-name-value"></div>
+      </div>
+    </div>
+
+    <div class="rg-body">
+      <div class="rg-desc">
+        <strong>해당하는 항목을 선택해 주세요.</strong>
+        <em>Please select all qualifications that apply.</em>
+        <em style="margin-top:6px;color:#b8922a;">※ 아래에 개인적인 추천 사유도 추가로 적어주실 수 있습니다.</em>
+      </div>
+
+      <div class="rg-section-title">
+        자격 기준 선택
+        <span style="background:var(--gold);color:var(--navy);font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;letter-spacing:0.3px;text-transform:none;">✓ 복수 선택 가능 / Multiple OK</span>
+      </div>
+      <div class="rg-qual-grid" id="rg-qual-grid"></div>
+
+      <div class="rg-section-title">개인 추천 사유 / Personal Reason <span style="font-size:10px;color:var(--text-light);text-transform:none;font-weight:400;letter-spacing:0;">(선택사항 / Optional)</span></div>
+      <div class="rg-memo-label">
+        위 항목 외에 <strong>개인적으로 이 분을 추천하시는 이유</strong>를 자유롭게 적어주세요.<br>
+        <em style="font-style:italic;font-size:11px;color:#aaa;">Beyond the qualifications above, please share your personal reasons for recommending this person.</em>
+      </div>
+      <textarea class="rg-memo" id="rg-memo"
+        placeholder="예) 이 분은 교회 밖에서도 신앙의 본을 보이시며, 이웃을 위해 헌신적으로 봉사하십니다.&#10;e.g. This person exemplifies their faith outside the church and serves the community selflessly."></textarea>
+    </div>
+
+    <div class="rg-footer">
+      <button class="rg-btn-skip" onclick="closeReasonGuide(true)">
+        사유 없이 추천<br><span style="font-size:10px;opacity:0.7;">Nominate without reason</span>
+      </button>
+      <button class="rg-btn-save" onclick="closeReasonGuide(false)">
+        ✓ &nbsp;사유 저장 후 계속<br><span style="font-size:11px;opacity:0.8;">Save reasons &amp; Continue</span>
+      </button>
+    </div>
+  </div>
 </div>
 
 <!-- NAME PICKER POPUP -->
@@ -865,6 +1014,8 @@ function addCandidate(type, name) {
     document.getElementById(type + '-name-' + slot).value = name;
     onNameInput(type, slot);
     document.getElementById(type + '-card-' + slot).scrollIntoView({ behavior:'smooth', block:'center' });
+    // 추천 사유 안내 팝업
+    setTimeout(() => openReasonGuide(type, slot, name), 300);
   }
 }
 
@@ -1021,11 +1172,81 @@ function selectFromPicker(name) {
   document.body.style.overflow = '';
   pickerState = { type: null, slot: null };
 
-  // scroll to that card's reason section
-  setTimeout(() => {
-    const card = document.getElementById(type + '-card-' + slot);
-    if (card) card.scrollIntoView({ behavior:'smooth', block:'center' });
-  }, 300);
+  // 추천 사유 안내 팝업 띄우기
+  setTimeout(() => openReasonGuide(type, slot, name), 200);
+}
+
+// ── Reason Guide Popup ───────────────────────────────────────
+let rgState = { type: null, slot: null };
+
+function openReasonGuide(type, slot, name) {
+  rgState = { type, slot };
+
+  // Set nominee name + avatar
+  document.getElementById('rg-name-value').textContent = name;
+  const av = document.getElementById('rg-avatar');
+  const safeName = name.replace(/'/g, "\\'");
+  const photoUrl = photos[name];
+  av.innerHTML = `<img src="${photoUrl}" alt="${name}"
+    style="width:100%;height:100%;object-fit:cover;border-radius:50%;"
+    onerror="tryPhotoFallback(this,'${safeName}')">`;
+
+  // Build qual grid from current QUALS
+  const grid = document.getElementById('rg-qual-grid');
+  grid.innerHTML = '';
+  const quals = QUALS[type] || QUALS_FALLBACK[type] || [];
+  quals.forEach((q, i) => {
+    const item = document.createElement('div');
+    item.className = 'rg-qual-item';
+    item.dataset.qi = i + 1;
+    // Restore previously selected quals if any
+    const existingSet = selectedQuals[type][slot] || new Set();
+    if (existingSet.has(i + 1)) item.classList.add('active');
+    item.innerHTML = `
+      <span class="rg-qual-num">${i+1}</span>
+      <span class="rg-qual-text">${q.ko}<em class="rg-qual-en">${q.en}</em></span>`;
+    item.addEventListener('click', () => item.classList.toggle('active'));
+    grid.appendChild(item);
+  });
+
+  // Restore memo
+  const existingMemo = document.getElementById(type + '-memo-' + slot);
+  document.getElementById('rg-memo').value = existingMemo ? existingMemo.value : '';
+
+  document.getElementById('reasonGuideOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeReasonGuide(skip) {
+  const { type, slot } = rgState;
+  if (!skip && type && slot) {
+    // Save selected quals back to the nominee card
+    const activeItems = document.querySelectorAll('#rg-qual-grid .rg-qual-item.active');
+    const set = new Set();
+    activeItems.forEach(item => set.add(parseInt(item.dataset.qi)));
+    selectedQuals[type][slot] = set;
+
+    // Sync qual chips in the nominee card
+    set.forEach(qi => {
+      const chip = document.querySelector(`.qual-chip[data-type="${type}"][data-slot="${slot}"][data-qi="${qi}"]`);
+      if (chip) chip.classList.add('active');
+    });
+    // Deactivate unselected chips
+    document.querySelectorAll(`.qual-chip[data-type="${type}"][data-slot="${slot}"]`).forEach(chip => {
+      if (!set.has(parseInt(chip.dataset.qi))) chip.classList.remove('active');
+    });
+
+    // Save memo
+    const memo = document.getElementById('rg-memo').value;
+    const memoEl = document.getElementById(type + '-memo-' + slot);
+    if (memoEl) memoEl.value = memo;
+
+    updateReasonPreview(type, slot);
+  }
+
+  document.getElementById('reasonGuideOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+  rgState = { type: null, slot: null };
 }
 
 // ── Tab switch ───────────────────────────────────────────────
