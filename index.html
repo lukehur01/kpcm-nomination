@@ -395,6 +395,18 @@
   .nominee-name-wrap { flex:1; }
   .nominee-name-input { width:100%; cursor:pointer; }
 
+  /* Next slot highlight pulse */
+  @keyframes inputPulse {
+    0%   { box-shadow: 0 0 0 0 rgba(184,146,42,0.7); border-color: var(--gold); }
+    50%  { box-shadow: 0 0 0 8px rgba(184,146,42,0); border-color: var(--gold-light); }
+    100% { box-shadow: 0 0 0 0 rgba(184,146,42,0); border-color: var(--border); }
+  }
+  .input-pulse {
+    animation: inputPulse 0.8s ease-out 2;
+    border-color: var(--gold) !important;
+    background: #fffbf0 !important;
+  }
+
   /* Loading spinner */
   .loading-panel { text-align:center; padding:30px; color:var(--text-light); font-size:13px; }
   .spinner { display:inline-block; width:24px; height:24px; border:3px solid var(--border); border-top-color:var(--navy); border-radius:50%; animation:spin 0.8s linear infinite; margin-bottom:8px; }
@@ -1062,8 +1074,16 @@ function openNamePicker(type, slot) {
 
   // Reset search and render
   const searchEl = document.getElementById('picker-search-input');
-  if (searchEl) { searchEl.value = ''; searchEl.focus(); }
+  if (searchEl) { searchEl.value = ''; }
   renderPickerList('');
+  // 팝업 내부 스크롤 맨 위로
+  setTimeout(() => {
+    const body = document.getElementById('picker-body-list');
+    const pickerBody = body ? body.parentElement : null;
+    if (body) body.scrollTop = 0;
+    if (pickerBody) pickerBody.scrollTop = 0;
+    if (searchEl) searchEl.focus();
+  }, 50);
 }
 
 function closeNamePicker() {
@@ -1215,6 +1235,16 @@ function openReasonGuide(type, slot, name) {
 
   document.getElementById('reasonGuideOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
+  // 팝업 내부 스크롤 맨 위로
+  setTimeout(() => {
+    const grid = document.getElementById('rg-qual-grid');
+    const body = grid ? grid.closest('.rg-body') : null;
+    if (grid) grid.scrollTop = 0;
+    if (body) body.scrollTop = 0;
+    // 팝업 박스 전체도 맨 위로
+    const box = document.querySelector('.reason-guide-box');
+    if (box) box.scrollTop = 0;
+  }, 50);
 }
 
 function closeReasonGuide(skip) {
@@ -1246,7 +1276,34 @@ function closeReasonGuide(skip) {
 
   document.getElementById('reasonGuideOverlay').classList.remove('open');
   document.body.style.overflow = '';
+
+  // 다음 빈 추천 칸으로 자동 스크롤 + 하이라이트
+  const savedType = rgState.type;
+  const savedSlot = rgState.slot;
   rgState = { type: null, slot: null };
+
+  setTimeout(() => {
+    if (!savedType) return;
+    const max = savedType === 'elder' ? 3 : 15;
+    // 다음 빈 슬롯 찾기
+    let nextSlot = -1;
+    for (let i = savedSlot + 1; i <= max; i++) {
+      const el = document.getElementById(savedType + '-name-' + i);
+      if (el && el.value.trim() === '') { nextSlot = i; break; }
+    }
+    if (nextSlot === -1) return; // 모두 채워진 경우
+
+    const nextInput = document.getElementById(savedType + '-name-' + nextSlot);
+    const nextCard  = document.getElementById(savedType + '-card-' + nextSlot);
+    if (!nextCard || !nextInput) return;
+
+    // 카드 스크롤
+    nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    // 입력란 펄스 애니메이션으로 강조
+    nextInput.classList.add('input-pulse');
+    setTimeout(() => nextInput.classList.remove('input-pulse'), 2000);
+  }, 400);
 }
 
 // ── Tab switch ───────────────────────────────────────────────
