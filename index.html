@@ -319,11 +319,11 @@
     <p class="tab-label">추천 직분을 선택해 주세요 / Select the position to nominate</p>
     <div class="tabs">
       <button class="tab-btn active" onclick="switchTab('elder')" id="tab-elder">
-        <span class="tab-ko">시무 장로</span><span class="tab-en">Ruling Elder</span>
+        <span class="tab-ko">시무 장로</span><span class="tab-en">Elder</span>
         <span class="tab-count">최대 3명 / Up to 3</span>
       </button>
       <button class="tab-btn" onclick="switchTab('deacon')" id="tab-deacon">
-        <span class="tab-ko">시무 안수집사</span><span class="tab-en">Ruling Deacon</span>
+        <span class="tab-ko">시무 안수집사</span><span class="tab-en">Deacon</span>
         <span class="tab-count">최대 15명 / Up to 15</span>
       </button>
     </div>
@@ -496,16 +496,16 @@
 <div class="success-screen" id="allDoneScreen">
   <div class="success-icon" style="background:#e8eaf6;font-size:36px;">🙏</div>
   <h2 style="color:var(--navy);font-size:24px;margin-bottom:12px;">모두 추천하였습니다!</h2>
-  <p style="font-size:15px;">장로 및 안수집사 추천서를<br>모두 성공적으로 제출하셨습니다.<br><em style="font-size:13px;color:#aaa;">You have completed both nomination forms.<br>Elder &amp; Ruling Deacon nominations submitted.</em></p>
+  <p style="font-size:15px;">장로 및 안수집사 추천서를<br>모두 성공적으로 제출하셨습니다.<br><em style="font-size:13px;color:#aaa;">You have completed both nomination forms.<br>Elder &amp; Deacon nominations submitted.</em></p>
   <div style="margin:28px auto;padding:20px 28px;background:var(--navy);border-radius:14px;max-width:400px;">
     <div style="color:var(--gold-light);font-family:'Noto Serif KR',serif;font-size:13px;margin-bottom:12px;">제출 완료 / Submitted</div>
     <div id="alldone-elder" style="display:flex;align-items:center;gap:10px;color:white;font-size:14px;margin-bottom:8px;">
       <span style="width:22px;height:22px;background:var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;">✓</span>
-      시무 장로 추천서 / Ruling Elder Nomination
+      시무 장로 추천서 / Elder Nomination
     </div>
     <div id="alldone-deacon" style="display:flex;align-items:center;gap:10px;color:white;font-size:14px;">
       <span style="width:22px;height:22px;background:var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;">✓</span>
-      시무 안수집사 추천서 / Ruling Deacon Nomination
+      시무 안수집사 추천서 / Deacon Nomination
     </div>
   </div>
   <p style="font-size:13px;color:var(--text-light);">추천에 참여해 주셔서 감사합니다.<br><em>Thank you for your participation in the nomination process.</em></p>
@@ -577,18 +577,18 @@ const QUALS_FALLBACK = {
 // ── Fallback candidate data (used if Sheets fails to load) ───
 const FALLBACK = {
   elder: [
-    { group:'시무집사 3년차 (Third Year Ruling Deacon)', names:['권은영','김승신','빈벤자민','이영섭','이정원','정지원','한동호','홍성진'] },
+    { group:'시무집사 3년차 (Third Year Deacon)', names:['권은영','김승신','빈벤자민','이영섭','이정원','정지원','한동호','홍성진'] },
     { group:'시무집사 2년차 재임 (Second Year Re-installed)', names:['권영민','김미용','박민선','백지연','송민정','신에스더','신지연','안혜경','오자희','윤기승','이범석','이영정'] },
     { group:'시무집사 1년차 재임 (First Year Re-installed)', names:['김군자','김진','김호선','서스티브','이인아','최선아','한성희','홍도선'] },
-    { group:'휴무집사 (Non-Ruling Deacon)', names:['고민정','곽형진','김길성','김나리','김남진','김동원','김보영','김인영','김재형','김진오','데이비스플로이드','박남선','박병욱','박상만','박원규','박인순','박혜원','서성혜','손다니엘','신지현','신훈','양재창','오석우','이묘환','이사라','이상엽','이선희','이승재','이은주','이정희','이종규','이중의','정구홍','조항신','지미희','최순애','최정숙','최진호','현혜원','Willie Johnson'] },
+    { group:'휴무집사 (Non-Deacon)', names:['고민정','곽형진','김길성','김나리','김남진','김동원','김보영','김인영','김재형','김진오','데이비스플로이드','박남선','박병욱','박상만','박원규','박인순','박혜원','서성혜','손다니엘','신지현','신훈','양재창','오석우','이묘환','이사라','이상엽','이선희','이승재','이은주','이정희','이종규','이중의','정구홍','조항신','지미희','최순애','최정숙','최진호','현혜원','Willie Johnson'] },
     { group:'휴무집사(권사) (Deaconess)', names:['김동희','김선희','김성옥','김영주','김임숙','데이비스옥분','도순신','레브랑영희','문윤경','서보미','송순려','유희옥','윤장옥','이경숙','이복례','이애숙','이효선','임성순','정경숙','정정선','홍영이','황명휘'] },
     { group:'협동장로 3년이상 (Cooperative Elder ≥3yrs)', names:['전말용','하버낸시'] },
-    { group:'휴무장로 (Non-Ruling Elder)', names:['김문식','김승회','김영구','김종선','김창용','Michael LeBlanc','문인석','서능권','유한용','이재윤','지형진','이재규'] }
+    { group:'휴무장로 (Non-Elder)', names:['김문식','김승회','김영구','김종선','김창용','Michael LeBlanc','문인석','서능권','유한용','이재윤','지형진','이재규'] }
   ],
   deacon: [
     { group:'서리집사 3년이상 출석 (Deputy Deacon ≥3yrs)', names:['곽미령','권정민','권주영','김경자','김광수','김명진','김명애','김미아','김알리스','김영란','김우재','김재현','김지영','김형미','박로','박미숙','박성진','박영은','박조이','박지향','박창민','박철수','변경애','변옥규','서가진','서영종','서인수','서희주','송승호','신성수','신용민','양승재','오써니','오Kenneth','이기형','이미나','이상훈','이성림','이정화','이준호','이지연','이현경','이혜진(a)','이혜진(b)','임미숙','임성빈','전일수','정규식','정미선','정용범','정혁','정형숙','조광제','조광휘','조미연','조현미','최왕','최지희','한정희'] },
     { group:'협동안수집사 3년이상 (Cooperative Deacon ≥3yrs)', names:['백상진','안신열','이성행','이순영','이주면','허영남'] },
-    { group:'휴무집사 (Non-Ruling Deacon)', names:['고민정','곽형진','김길성','김나리','김남진','김동원','김보영','김인영','김재형','김진오','데이비스플로이드','박남선','박병욱','박상만','박원규','박인순','박혜원','서성혜','손다니엘','손종필','신지현','신훈','양재창','오석우','이묘환','이사라','이상엽','이선희','이승재','이은주','이정희','이종규','이중의','정구홍','조항신','지미희','최순애','최정숙','최진호','현혜원','Willie Johnson'] },
+    { group:'휴무집사 (Non-Deacon)', names:['고민정','곽형진','김길성','김나리','김남진','김동원','김보영','김인영','김재형','김진오','데이비스플로이드','박남선','박병욱','박상만','박원규','박인순','박혜원','서성혜','손다니엘','손종필','신지현','신훈','양재창','오석우','이묘환','이사라','이상엽','이선희','이승재','이은주','이정희','이종규','이중의','정구홍','조항신','지미희','최순애','최정숙','최진호','현혜원','Willie Johnson'] },
     { group:'협동안수집사/서리집사(권사) (Kwonsa – not installed)', names:['김효경','데이비스옥분','민정혜','박복선','유정자','이병남','이성자','장현숙','홍미숙'] },
     { group:'휴무집사(권사) (Kwonsa – previously installed)', names:['김동희','김선희','김성옥','김영주','김임숙','데이비스옥분','도순신','레브랑영희','문윤경','서보미','송순려','유희옥','윤장옥','이경숙','이복례','이애숙','이효선','임성순','정경숙','정정선','홍영이','황명휘'] }
   ]
@@ -830,7 +830,21 @@ function onChipClick(type, name, groupLabel) {
   document.getElementById('photoModal').classList.add('show');
 }
 function closeModal() { document.getElementById('photoModal').classList.remove('show'); }
-function addFromModal() { if (modalCurrentName) addCandidate(modalCurrentType, modalCurrentName); closeModal(); }
+function addFromModal() {
+  if (!modalCurrentName) { closeModal(); return; }
+  const addBtn = document.getElementById('modalAddBtn');
+  const fromPicker = addBtn.dataset.fromPicker === 'true';
+  if (fromPicker) {
+    // picker에서 열린 경우 → picker를 닫고 selectFromPicker 호출
+    addBtn.dataset.fromPicker = '';
+    closeModal();
+    selectFromPicker(modalCurrentName);
+  } else {
+    // 대상자 명단 패널에서 열린 경우 → addCandidate 호출
+    addCandidate(modalCurrentType, modalCurrentName);
+    closeModal();
+  }
+}
 
 // ── Add / remove candidate ───────────────────────────────────
 function addCandidate(type, name) {
@@ -905,7 +919,10 @@ function closeNamePicker() {
   document.getElementById('name-picker-overlay').classList.remove('open');
   document.getElementById('name-picker-panel').classList.remove('open');
   document.body.style.overflow = '';
-  pickerState = { type: null, slot: null };
+  // 모달이 열려있으면 picker는 닫되 모달은 유지
+  if (!document.getElementById('photoModal').classList.contains('show')) {
+    pickerState = { type: null, slot: null };
+  }
 }
 
 function renderPickerList(filter) {
@@ -937,7 +954,10 @@ function renderPickerList(filter) {
         const av = chip.querySelector('.p-avatar');
         if (av) loadPhotoImg(name, av);
       }, 0);
-      chip.addEventListener('click', () => selectFromPicker(name));
+      chip.addEventListener('click', () => {
+        // 사진 팝업 먼저 → 팝업에서 "추천에 추가" 누르면 selectFromPicker 호출
+        openPhotoModalFromPicker(type, name, group.group);
+      });
       grid.appendChild(chip);
       total++;
     });
@@ -948,6 +968,36 @@ function renderPickerList(filter) {
   if (total === 0) {
     container.innerHTML = '<div class="picker-no-result">검색 결과가 없습니다 / No results found</div>';
   }
+}
+
+function openPhotoModalFromPicker(type, name, groupLabel) {
+  // pickerState는 그대로 유지 (slot 정보 보존)
+  modalCurrentName = name;
+  modalCurrentType = type;
+  modalCurrentGroup = groupLabel;
+
+  // 모달 사진/이름/카테고리 설정
+  const mPhotoUrl = photos[name];
+  const safeName = name.replace(/'/g, "\\'");
+  document.getElementById('modalAvatar').innerHTML =
+    `<img src="${mPhotoUrl}" alt="${name}"
+      style="width:100%;height:100%;object-fit:cover;border-radius:50%;"
+      onerror="tryPhotoFallback(this,'${safeName}')">`;
+  document.getElementById('modalName').textContent = name;
+  document.getElementById('modalCat').textContent = groupLabel;
+
+  // "추천에 추가" 버튼 — picker에서 왔으므로 selectFromPicker 호출
+  const alreadySelected = selectedNames[type].includes(name);
+  const addBtn = document.getElementById('modalAddBtn');
+  addBtn.textContent = alreadySelected
+    ? '✓ 이미 추가됨 / Already Added'
+    : '+ 추천에 추가 / Add to Nomination';
+  addBtn.style.background = alreadySelected ? '#2d6a4f' : '';
+
+  // addFromModal이 picker context인지 구분하는 플래그
+  addBtn.dataset.fromPicker = 'true';
+
+  document.getElementById('photoModal').classList.add('show');
 }
 
 function selectFromPicker(name) {
@@ -965,13 +1015,17 @@ function selectFromPicker(name) {
 
   const nameEl = document.getElementById(type + '-name-' + slot);
   if (nameEl) { nameEl.value = name; onNameInput(type, slot); }
-  closeNamePicker();
+  // picker 완전히 닫기
+  document.getElementById('name-picker-overlay').classList.remove('open');
+  document.getElementById('name-picker-panel').classList.remove('open');
+  document.body.style.overflow = '';
+  pickerState = { type: null, slot: null };
 
   // scroll to that card's reason section
   setTimeout(() => {
     const card = document.getElementById(type + '-card-' + slot);
     if (card) card.scrollIntoView({ behavior:'smooth', block:'center' });
-  }, 200);
+  }, 300);
 }
 
 // ── Tab switch ───────────────────────────────────────────────
@@ -1032,7 +1086,7 @@ async function submitForm(type) {
       return;
     }
 
-    const typeName = type==='elder' ? '시무 장로 / Ruling Elder' : '시무 안수집사 / Ruling Deacon';
+    const typeName = type==='elder' ? '시무 장로 / Elder' : '시무 안수집사 / Deacon';
     let html = `<h4>📋 제출 요약 / Submission Summary</h4>`;
     html += `<strong>직분:</strong> ${typeName}<br>`;
     html += `<strong>추천인:</strong> ${nameEl.value.trim()} (${phoneEl.value.trim()})<br>`;
@@ -1062,8 +1116,8 @@ async function submitForm(type) {
     // One form done → show success with "go to other" button
     const otherType = type === 'elder' ? 'deacon' : 'elder';
     const otherLabel = type === 'elder'
-      ? '시무 안수집사 추천하러 가기<span class="btn-next-sub">Go to Ruling Deacon Nomination →</span>'
-      : '시무 장로 추천하러 가기<span class="btn-next-sub">Go to Ruling Elder Nomination →</span>';
+      ? '시무 안수집사 추천하러 가기<span class="btn-next-sub">Go to Deacon Nomination →</span>'
+      : '시무 장로 추천하러 가기<span class="btn-next-sub">Go to Elder Nomination →</span>';
     document.getElementById('btn-next-other').innerHTML = otherLabel;
     document.getElementById('successScreen').classList.add('show');
   } catch(err) {
