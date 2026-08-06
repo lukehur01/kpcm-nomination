@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>2027 KPCM 임직자 추천서 / 2027 Nomination Form</title>
+<title>KPCM 임직자 추천서 / Nomination Form</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600;700&family=Noto+Sans+KR:wght@300;400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -244,18 +244,35 @@
   /* REASON GUIDE POPUP */
   .reason-guide-overlay {
     display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:1000;
-    align-items:center; justify-content:center;
+    align-items:flex-end; justify-content:center;
+  }
+  @media(min-width:540px){
+    .reason-guide-overlay { align-items:center; }
   }
   .reason-guide-overlay.open { display:flex; }
   .reason-guide-box {
-    background:var(--white); border-radius:20px; width:92%; max-width:480px;
-    overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.25);
+    background:var(--white);
+    border-radius:20px 20px 0 0;
+    width:100%; max-width:480px;
+    /* 핵심: 전체 높이의 최대 90%까지만, 내부에서 스크롤 */
+    max-height:90vh;
+    display:flex; flex-direction:column;
+    overflow:hidden;
+    box-shadow:0 -4px 40px rgba(0,0,0,0.2);
     animation:slideUp 0.3s cubic-bezier(0.32,0.72,0,1);
+  }
+  @media(min-width:540px){
+    .reason-guide-box {
+      border-radius:20px;
+      width:92%;
+      box-shadow:0 20px 60px rgba(0,0,0,0.25);
+    }
   }
   @keyframes slideUp { from{transform:translateY(40px);opacity:0} to{transform:translateY(0);opacity:1} }
   .rg-header {
     background:var(--navy); padding:20px 24px 18px;
     display:flex; align-items:flex-start; justify-content:space-between;
+    flex-shrink:0;
   }
   .rg-header-icon { font-size:28px; margin-right:12px; flex-shrink:0; margin-top:2px; }
   .rg-header-text h3 {
@@ -268,6 +285,7 @@
     background:linear-gradient(135deg,#eef1f7,#f8f6ff);
     border-bottom:1px solid var(--border);
     padding:14px 24px; display:flex; align-items:center; gap:12px;
+    flex-shrink:0;
   }
   .rg-name-avatar {
     width:44px; height:44px; border-radius:50%; border:2px solid var(--gold);
@@ -278,7 +296,14 @@
   .rg-name-avatar img { width:100%; height:100%; object-fit:cover; }
   .rg-name-label { font-size:11px; color:var(--text-light); margin-bottom:2px; }
   .rg-name-value { font-family:'Noto Serif KR',serif; font-size:18px; font-weight:700; color:var(--navy); }
-  .rg-body { padding:20px 24px; }
+  .rg-body {
+    padding:20px 24px;
+    overflow-y:auto;
+    flex:1; /* takes up remaining space between header and footer */
+    -webkit-overflow-scrolling:touch;
+  }
+  .rg-body::-webkit-scrollbar { width:4px; }
+  .rg-body::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
   .rg-section-title {
     font-size:11px; font-weight:700; color:var(--text-light);
     letter-spacing:0.8px; text-transform:uppercase; margin-bottom:10px;
@@ -292,7 +317,11 @@
   }
   .rg-desc strong { color:var(--navy); }
   .rg-desc em { display:block; color:#888; font-style:normal; font-size:11.5px; margin-top:3px; }
-  .rg-qual-grid { display:flex; flex-direction:column; gap:6px; margin-bottom:16px; max-height:240px; overflow-y:auto; }
+  .rg-qual-grid {
+    display:flex; flex-direction:column; gap:6px; margin-bottom:16px;
+    /* 그리드 자체 스크롤 제거 — rg-body가 스크롤 담당 */
+    max-height:none; overflow-y:visible;
+  }
   .rg-qual-grid::-webkit-scrollbar { width:4px; }
   .rg-qual-grid::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
   .rg-qual-item {
@@ -323,6 +352,9 @@
   .rg-footer {
     padding:14px 24px 20px; display:flex; gap:10px; border-top:1px solid var(--border);
     background:var(--cream);
+    flex-shrink:0;
+    /* 안드로이드 하단 안전 영역 확보 */
+    padding-bottom:max(20px, env(safe-area-inset-bottom, 20px));
   }
   .rg-btn-skip {
     flex:1; padding:12px; border:2px solid var(--border); background:transparent;
@@ -1531,6 +1563,31 @@ function buildDaySelect(id) {
 loadAll('elder');
 loadAll('deacon');
 document.getElementById('photoModal').addEventListener('click', function(e){ if(e.target===this) closeModal(); });
+
+// Android keyboard viewport fix
+if (typeof window !== 'undefined') {
+  // When memo textarea is focused, scroll it into view properly
+  document.addEventListener('focusin', (e) => {
+    if (e.target && e.target.id === 'rg-memo') {
+      setTimeout(() => {
+        e.target.scrollIntoView({ behavior:'smooth', block:'center' });
+      }, 300);
+    }
+  });
+  // Visual viewport resize (Android keyboard up/down)
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', () => {
+      const overlay = document.getElementById('reasonGuideOverlay');
+      if (overlay && overlay.classList.contains('open')) {
+        const box = overlay.querySelector('.reason-guide-box');
+        if (box) {
+          const vh = window.visualViewport.height;
+          box.style.maxHeight = (vh * 0.92) + 'px';
+        }
+      }
+    });
+  }
+}
 </script>
 </body>
 </html>
