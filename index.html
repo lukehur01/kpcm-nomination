@@ -241,34 +241,40 @@
   .modal-btn.secondary { background:transparent; border:2px solid var(--border); color:var(--text); }
   .modal-btn.secondary:hover { border-color:var(--navy); color:var(--navy); }
 
-  /* REASON GUIDE POPUP */
-  .reason-guide-overlay {
+  /* REASON GUIDE POPUP + REVIEW POPUP
+     ── 모바일에서 상단 고정(top-anchored):
+     안드로이드는 키보드가 올라오면 뷰포트가 줄어들어
+     하단 시트가 밀리거나 버튼이 가려지므로, 팝업을 화면 위쪽에 붙인다. */
+  .reason-guide-overlay, .review-overlay {
     display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:1000;
-    align-items:flex-end; justify-content:center;
+    align-items:flex-start; justify-content:center;
+    padding-top:max(10px, env(safe-area-inset-top, 10px));
   }
   @media(min-width:540px){
-    .reason-guide-overlay { align-items:center; }
+    .reason-guide-overlay, .review-overlay { align-items:center; padding-top:0; }
   }
-  .reason-guide-overlay.open { display:flex; }
-  .reason-guide-box {
+  .reason-guide-overlay.open, .review-overlay.open { display:flex; }
+  .reason-guide-box, .review-box {
     background:var(--white);
-    border-radius:20px 20px 0 0;
-    width:100%; max-width:480px;
-    /* 핵심: 전체 높이의 최대 90%까지만, 내부에서 스크롤 */
-    max-height:90vh;
+    border-radius:18px;
+    width:94%; max-width:480px;
+    /* 뷰포트(키보드 제외 영역) 기준 높이 — dvh 미지원 브라우저는 vh 폴백 */
+    max-height:calc(100vh - 24px);
+    max-height:calc(100dvh - 24px);
     display:flex; flex-direction:column;
     overflow:hidden;
-    box-shadow:0 -4px 40px rgba(0,0,0,0.2);
-    animation:slideUp 0.3s cubic-bezier(0.32,0.72,0,1);
+    box-shadow:0 10px 50px rgba(0,0,0,0.3);
+    animation:slideDown 0.28s cubic-bezier(0.32,0.72,0,1);
   }
   @media(min-width:540px){
-    .reason-guide-box {
+    .reason-guide-box, .review-box {
       border-radius:20px;
       width:92%;
       box-shadow:0 20px 60px rgba(0,0,0,0.25);
     }
   }
   @keyframes slideUp { from{transform:translateY(40px);opacity:0} to{transform:translateY(0);opacity:1} }
+  @keyframes slideDown { from{transform:translateY(-24px);opacity:0} to{transform:translateY(0);opacity:1} }
   .rg-header {
     background:var(--navy); padding:20px 24px 18px;
     display:flex; align-items:flex-start; justify-content:space-between;
@@ -439,6 +445,77 @@
     background: #fffbf0 !important;
   }
 
+  /* ── STEP PROGRESS BAR ── */
+  .step-bar { display:flex; align-items:center; justify-content:center; margin:20px 0 6px; }
+  .step-item { display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--text-light); font-weight:500; }
+  .step-dot {
+    width:24px; height:24px; border-radius:50%;
+    background:var(--white); border:2px solid var(--border); color:var(--text-light);
+    font-size:11px; font-weight:700;
+    display:flex; align-items:center; justify-content:center;
+    transition:all 0.25s; flex-shrink:0;
+  }
+  .step-item.active .step-dot { background:var(--navy); border-color:var(--navy); color:var(--white); }
+  .step-item.done .step-dot { background:var(--green); border-color:var(--green); color:var(--white); }
+  .step-item.active { color:var(--navy); font-weight:700; }
+  .step-item.done { color:var(--green); }
+  .step-txt { line-height:1.25; }
+  .step-label-en { display:block; font-size:9px; opacity:0.6; font-weight:400; }
+  .step-line { width:24px; height:2px; background:var(--border); margin:0 8px; flex-shrink:0; }
+  @media(max-width:420px){
+    .step-item { font-size:10.5px; gap:4px; }
+    .step-dot { width:21px; height:21px; font-size:10px; }
+    .step-line { width:12px; margin:0 5px; }
+  }
+
+  /* ── "다음 단계" 버튼 (추천 완료 → 추천인 정보) ── */
+  .goto-submitter-wrap { margin:-4px 0 16px; }
+  .btn-goto {
+    width:100%; background:var(--gold); color:var(--navy);
+    border:none; padding:14px 20px; border-radius:10px;
+    font-size:14px; font-weight:700; font-family:'Noto Sans KR',sans-serif;
+    cursor:pointer; box-shadow:0 3px 14px rgba(184,146,42,0.32);
+    transition:background 0.2s, transform 0.1s;
+  }
+  .btn-goto:hover { background:var(--gold-light); }
+  .btn-goto:active { transform:scale(0.98); }
+  .btn-goto-sub { display:block; font-size:11px; font-weight:400; opacity:0.75; margin-top:2px; }
+
+  /* ── FINAL REVIEW POPUP 내용 ── */
+  .rv-section { margin-bottom:18px; }
+  .rv-label {
+    font-size:11px; font-weight:700; color:var(--text-light);
+    letter-spacing:0.6px; text-transform:uppercase; margin-bottom:8px;
+    display:flex; align-items:center; gap:8px;
+  }
+  .rv-label::after { content:''; flex:1; height:1px; background:var(--border); }
+  .rv-nominee {
+    display:flex; gap:10px; padding:10px 12px;
+    border:1px solid var(--border); border-radius:10px;
+    background:var(--warm-gray); margin-bottom:8px; align-items:flex-start;
+  }
+  .rv-avatar {
+    width:42px; height:42px; border-radius:50%;
+    background:var(--navy); color:white; font-size:15px; font-weight:700;
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0; overflow:hidden; border:2px solid var(--gold);
+  }
+  .rv-avatar img { width:100%; height:100%; object-fit:cover; }
+  .rv-n-name { font-family:'Noto Serif KR',serif; font-weight:700; color:var(--navy); font-size:14.5px; }
+  .rv-n-reason { font-size:11.5px; color:#555; line-height:1.65; margin-top:3px; }
+  .rv-n-reason .rv-qline { display:block; }
+  .rv-n-reason .rv-memo-line { display:block; color:#8a6d1d; margin-top:2px; }
+  .rv-n-noreason { font-size:11px; color:#aaa; font-style:italic; margin-top:2px; }
+  .rv-info {
+    background:#eef1f7; border:1px solid #c5cde3; border-radius:10px;
+    padding:12px 16px; font-size:13px; line-height:1.9; color:var(--navy);
+  }
+  .rv-warn {
+    font-size:11.5px; color:#7a6020; background:#fff8e7;
+    border:1px solid #e8d9a0; border-radius:8px;
+    padding:9px 12px; margin-top:10px; line-height:1.65;
+  }
+
   /* Loading spinner */
   .loading-panel { text-align:center; padding:30px; color:var(--text-light); font-size:13px; }
   .spinner { display:inline-block; width:24px; height:24px; border:3px solid var(--border); border-top-color:var(--navy); border-radius:50%; animation:spin 0.8s linear infinite; margin-bottom:8px; }
@@ -512,6 +589,13 @@
         </div>
 
         <div>
+          <div class="step-bar" id="elder-step-bar">
+            <div class="step-item active" data-step="1"><span class="step-dot">1</span><span class="step-txt">후보 추천<span class="step-label-en">Nominate</span></span></div>
+            <div class="step-line"></div>
+            <div class="step-item" data-step="2"><span class="step-dot">2</span><span class="step-txt">추천인 정보<span class="step-label-en">Your Info</span></span></div>
+            <div class="step-line"></div>
+            <div class="step-item" data-step="3"><span class="step-dot">3</span><span class="step-txt">확인·제출<span class="step-label-en">Review</span></span></div>
+          </div>
           <div class="qualifications" id="elder-quals">
             <h3>추천 자격 기준 / Qualifications</h3>
             <ul class="qual-list" id="elder-qual-list"></ul>
@@ -521,6 +605,10 @@
           <div class="card">
             <div class="card-title">장로 추천 명단 / Elder Nominees <span style="font-weight:400;color:var(--text-light);font-size:12px;">(최대 3명)</span><span class="selected-count" id="elder-sel-count">0/3</span></div>
             <div id="elder-nominees"></div>
+          </div>
+
+          <div class="goto-submitter-wrap" id="elder-goto-wrap" style="display:none;">
+            <button class="btn-goto" onclick="gotoSubmitter('elder')">✓ 추천 완료 — 추천인 정보 입력하기<span class="btn-goto-sub">Done nominating → Enter your information</span></button>
           </div>
 
           <div class="card" id="elder-submitter-card">
@@ -585,6 +673,13 @@
         </div>
 
         <div>
+          <div class="step-bar" id="deacon-step-bar">
+            <div class="step-item active" data-step="1"><span class="step-dot">1</span><span class="step-txt">후보 추천<span class="step-label-en">Nominate</span></span></div>
+            <div class="step-line"></div>
+            <div class="step-item" data-step="2"><span class="step-dot">2</span><span class="step-txt">추천인 정보<span class="step-label-en">Your Info</span></span></div>
+            <div class="step-line"></div>
+            <div class="step-item" data-step="3"><span class="step-dot">3</span><span class="step-txt">확인·제출<span class="step-label-en">Review</span></span></div>
+          </div>
           <div class="qualifications" id="deacon-quals">
             <h3>추천 자격 기준 / Qualifications</h3>
             <ul class="qual-list" id="deacon-qual-list"></ul>
@@ -594,6 +689,10 @@
           <div class="card">
             <div class="card-title">안수집사 추천 명단 / Deacon Nominees <span style="font-weight:400;color:var(--text-light);font-size:12px;">(최소 1명, 최대 15명)</span><span class="selected-count" id="deacon-sel-count">0/15</span></div>
             <div id="deacon-nominees"></div>
+          </div>
+
+          <div class="goto-submitter-wrap" id="deacon-goto-wrap" style="display:none;">
+            <button class="btn-goto" onclick="gotoSubmitter('deacon')">✓ 추천 완료 — 추천인 정보 입력하기<span class="btn-goto-sub">Done nominating → Enter your information</span></button>
           </div>
 
           <div class="card" id="deacon-submitter-card">
@@ -722,6 +821,25 @@
       onclick="event.stopPropagation()">
   </div>
   <div class="picker-body" id="picker-body-list"></div>
+</div>
+
+<!-- FINAL REVIEW POPUP -->
+<div class="review-overlay" id="reviewOverlay">
+  <div class="review-box">
+    <div class="rg-header">
+      <div class="rg-header-icon">🔎</div>
+      <div class="rg-header-text">
+        <h3>제출 전 최종 확인 / Final Review</h3>
+        <p>추천 내용을 확인하신 후 <strong style="color:var(--gold-light)">최종 제출</strong>을 눌러주세요<br>Please review your nominations before submitting</p>
+      </div>
+      <button class="rg-close" onclick="closeReview()">✕</button>
+    </div>
+    <div class="rg-body" id="review-body"></div>
+    <div class="rg-footer">
+      <button class="rg-btn-skip" onclick="closeReview()">← 수정하기<br><span style="font-size:10px;opacity:0.7;">Go back &amp; edit</span></button>
+      <button class="rg-btn-save" id="review-confirm-btn" onclick="confirmSubmit()">✓ 최종 제출하기<br><span style="font-size:11px;opacity:0.8;">Confirm &amp; Submit</span></button>
+    </div>
+  </div>
 </div>
 
 <!-- MODAL -->
@@ -1079,6 +1197,34 @@ function updateSelCount(type) {
   // update FAB badge
   const fab = document.getElementById(type + '-fab-count');
   if (fab) fab.textContent = count;
+  // "다음 단계" 버튼: 1명 이상 추천 시 표시
+  const gw = document.getElementById(type + '-goto-wrap');
+  if (gw) gw.style.display = count > 0 ? 'block' : 'none';
+  // 추천을 모두 지우면 1단계로 되돌림
+  if (count === 0) setStep(type, 1);
+}
+
+// ── Step bar + 다음 단계 이동 ────────────────────────────────
+function setStep(type, step) {
+  const bar = document.getElementById(type + '-step-bar');
+  if (!bar) return;
+  bar.querySelectorAll('.step-item').forEach(item => {
+    const s = parseInt(item.dataset.step);
+    item.classList.toggle('done', s < step);
+    item.classList.toggle('active', s === step);
+  });
+}
+
+function gotoSubmitter(type) {
+  const card = document.getElementById(type + '-submitter-card');
+  if (!card) return;
+  setStep(type, 2);
+  card.scrollIntoView({ behavior:'smooth', block:'start' });
+  const nameInp = document.getElementById(type + '-submitter-name');
+  if (nameInp && !nameInp.value.trim()) {
+    nameInp.classList.add('input-pulse');
+    setTimeout(() => nameInp.classList.remove('input-pulse'), 2000);
+  }
 }
 
 function refreshChips(type) {
@@ -1323,7 +1469,11 @@ function closeReasonGuide(skip) {
       const el = document.getElementById(savedType + '-name-' + i);
       if (el && el.value.trim() === '') { nextSlot = i; break; }
     }
-    if (nextSlot === -1) return; // 모두 채워진 경우
+    if (nextSlot === -1) {
+      // 모든 칸이 채워짐 → 추천인 정보 입력 단계로 자연스럽게 이동
+      gotoSubmitter(savedType);
+      return;
+    }
 
     const nextInput = document.getElementById(savedType + '-name-' + nextSlot);
     const nextCard  = document.getElementById(savedType + '-card-' + nextSlot);
@@ -1346,8 +1496,133 @@ function switchTab(type) {
   document.getElementById('section-' + type).classList.add('active');
 }
 
-// ── Submit ───────────────────────────────────────────────────
-async function submitForm(type) {
+// ── Submit (1단계: 검증 후 최종 확인 팝업) ───────────────────
+let reviewType = null;
+
+function submitForm(type) {
+  const nameEl = document.getElementById(type + '-submitter-name');
+  const phoneEl = document.getElementById(type + '-submitter-phone');
+
+  const max = type === 'elder' ? 3 : 15;
+  let hasNominee = false;
+  for (let i = 1; i <= max; i++) {
+    const n = document.getElementById(type + '-name-' + i).value.trim();
+    if (n) { hasNominee = true; break; }
+  }
+  if (!hasNominee) { alert('최소 1명 이상 추천해 주세요.\nPlease nominate at least one person.'); return; }
+  if (!nameEl.value.trim()) { alert('추천인 성명을 입력해 주세요.\nPlease enter your name.'); gotoSubmitter(type); nameEl.focus(); return; }
+  if (!phoneEl.value.trim()) { alert('연락처를 입력해 주세요.\nPlease enter your phone number.'); gotoSubmitter(type); phoneEl.focus(); return; }
+
+  openReview(type);
+}
+
+// ── 최종 확인 팝업 ───────────────────────────────────────────
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function buildReviewReasonHtml(type, slot) {
+  const set = selectedQuals[type][slot] || new Set();
+  const memo = (document.getElementById(type + '-memo-' + slot) || {}).value || '';
+  let html = '';
+  if (set.size > 0) {
+    const nums = [...set].sort((a,b)=>a-b);
+    nums.forEach(n => {
+      const q = QUALS[type][n-1] || QUALS_FALLBACK[type][n-1] || { ko:'' };
+      html += `<span class="rv-qline">[${n}] ${q.ko}</span>`;
+    });
+  }
+  if (memo.trim()) {
+    html += `<span class="rv-memo-line">✎ ${escHtml(memo.trim())}</span>`;
+  }
+  if (!html) {
+    html = `<span class="rv-n-noreason">추천 사유 미입력 / No reason provided</span>`;
+  }
+  return html;
+}
+
+function openReview(type) {
+  reviewType = type;
+  setStep(type, 3);
+
+  const nameVal = escHtml(document.getElementById(type + '-submitter-name').value.trim());
+  const phoneVal = escHtml(document.getElementById(type + '-submitter-phone').value.trim());
+  const yearEl = document.getElementById(type + '-year');
+  const monthEl = document.getElementById(type + '-month');
+  const dayEl = document.getElementById(type + '-day');
+  const dateStr = `${yearEl.value || new Date().getFullYear()}년 ${monthEl.value || '__'}월 ${dayEl.value || '__'}일`;
+  const typeName = type === 'elder' ? '시무 장로 / Elder' : '시무 안수집사 / Deacon';
+
+  const max = type === 'elder' ? 3 : 15;
+  let nomineeHtml = '';
+  let count = 0;
+  const photoTargets = [];
+  for (let i = 1; i <= max; i++) {
+    const n = document.getElementById(type + '-name-' + i).value.trim();
+    if (!n) continue;
+    count++;
+    const avId = 'rv-av-' + type + '-' + i;
+    photoTargets.push({ id: avId, name: n });
+    nomineeHtml += `
+      <div class="rv-nominee">
+        <div class="rv-avatar" id="${avId}">${n.charAt(0)}</div>
+        <div style="flex:1;">
+          <div class="rv-n-name">${count}. ${n}</div>
+          <div class="rv-n-reason">${buildReviewReasonHtml(type, i)}</div>
+        </div>
+      </div>`;
+  }
+
+  const body = document.getElementById('review-body');
+  body.innerHTML = `
+    <div class="rv-section">
+      <div class="rv-label">추천 직분 / Position</div>
+      <div class="rv-info" style="padding:10px 16px;"><strong>${typeName}</strong></div>
+    </div>
+    <div class="rv-section">
+      <div class="rv-label">추천 명단 / Nominees (${count}명)</div>
+      ${nomineeHtml}
+    </div>
+    <div class="rv-section">
+      <div class="rv-label">추천인 정보 / Submitter</div>
+      <div class="rv-info">
+        <strong>성명 / Name:</strong> ${nameVal}<br>
+        <strong>연락처 / Phone:</strong> ${phoneVal}<br>
+        <strong>날짜 / Date:</strong> ${dateStr}
+      </div>
+      <div class="rv-warn">※ 최종 제출 후에는 수정할 수 없습니다. 내용을 다시 한번 확인해 주세요.<br><em style="font-style:italic;">Submissions cannot be edited after final submission. Please double-check.</em></div>
+    </div>`;
+
+  // 사진 비동기 로드
+  photoTargets.forEach(t => {
+    const el = document.getElementById(t.id);
+    if (el) loadPhotoImg(t.name, el);
+  });
+
+  document.getElementById('reviewOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => { body.scrollTop = 0; }, 30);
+}
+
+function closeReview() {
+  document.getElementById('reviewOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+  if (reviewType) setStep(reviewType, 2);
+  reviewType = null;
+}
+
+function confirmSubmit() {
+  const t = reviewType;
+  if (!t) return;
+  // 팝업 닫기 (단계는 3 유지)
+  document.getElementById('reviewOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+  reviewType = null;
+  doSubmit(t);
+}
+
+// ── Submit (2단계: 실제 전송) ────────────────────────────────
+async function doSubmit(type) {
   const nameEl = document.getElementById(type + '-submitter-name');
   const phoneEl = document.getElementById(type + '-submitter-phone');
   const yearEl = document.getElementById(type + '-year');
@@ -1575,19 +1850,25 @@ if (typeof window !== 'undefined') {
     }
   });
   // Visual viewport resize (Android keyboard up/down)
+  // 팝업이 상단 고정이므로, 보이는 영역(키보드 제외) 높이에 맞춰 박스 높이를 줄인다
   if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', () => {
-      const overlay = document.getElementById('reasonGuideOverlay');
-      if (overlay && overlay.classList.contains('open')) {
-        const box = overlay.querySelector('.reason-guide-box');
-        if (box) {
-          const vh = window.visualViewport.height;
-          box.style.maxHeight = (vh * 0.92) + 'px';
-        }
-      }
-    });
+    const fitPopupsToViewport = () => {
+      const vh = window.visualViewport.height;
+      document.querySelectorAll('.reason-guide-overlay.open .reason-guide-box, .review-overlay.open .review-box')
+        .forEach(box => { box.style.maxHeight = (vh - 24) + 'px'; });
+    };
+    window.visualViewport.addEventListener('resize', fitPopupsToViewport);
+    window.visualViewport.addEventListener('scroll', fitPopupsToViewport);
   }
 }
+
+// ── 추천인 정보 필드 포커스 시 단계 표시줄 2단계로 ──────────
+['elder','deacon'].forEach(t => {
+  ['name','phone'].forEach(f => {
+    const el = document.getElementById(t + '-submitter-' + f);
+    if (el) el.addEventListener('focus', () => setStep(t, 2));
+  });
+});
 </script>
 </body>
 </html>
