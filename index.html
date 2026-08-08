@@ -375,6 +375,30 @@
   }
   .rg-btn-save:hover { background:#243560; }
 
+  /* Reason guide footer — 계속 추천 / 추천 완료 선택 */
+  .rg-footer-col { flex-direction:column; gap:8px; }
+  .rg-footer-row { display:flex; gap:10px; }
+  .rg-btn-more {
+    flex:1.2; padding:12px 8px; background:var(--gold); color:var(--navy);
+    border:none; border-radius:10px; font-size:13.5px; font-weight:700;
+    font-family:'Noto Sans KR',sans-serif; cursor:pointer; transition:background 0.2s;
+    box-shadow:0 3px 12px rgba(184,146,42,0.3); line-height:1.35;
+  }
+  .rg-btn-more:hover { background:var(--gold-light); }
+  .rg-btn-done {
+    flex:1; padding:12px 8px; background:var(--navy); color:white;
+    border:none; border-radius:10px; font-size:13.5px; font-weight:600;
+    font-family:'Noto Sans KR',sans-serif; cursor:pointer; transition:background 0.2s;
+    line-height:1.35;
+  }
+  .rg-btn-done:hover { background:#243560; }
+  .rg-skip-link {
+    background:none; border:none; color:var(--text-light);
+    font-size:11.5px; font-family:'Noto Sans KR',sans-serif;
+    cursor:pointer; text-decoration:underline; padding:2px;
+  }
+  .rg-skip-link:hover { color:var(--navy); }
+
   /* NAME PICKER POPUP */
   .name-picker-overlay {
     display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:800;
@@ -792,13 +816,16 @@
         placeholder="예) 이 분은 교회 밖에서도 신앙의 본을 보이시며, 이웃을 위해 헌신적으로 봉사하십니다.&#10;e.g. This person exemplifies their faith outside the church and serves the community selflessly."></textarea>
     </div>
 
-    <div class="rg-footer">
-      <button class="rg-btn-skip" onclick="closeReasonGuide(true)">
-        사유 없이 추천<br><span style="font-size:10px;opacity:0.7;">Nominate without reason</span>
-      </button>
-      <button class="rg-btn-save" onclick="closeReasonGuide(false)">
-        ✓ &nbsp;사유 저장 후 계속<br><span style="font-size:11px;opacity:0.8;">Save reasons &amp; Continue</span>
-      </button>
+    <div class="rg-footer rg-footer-col">
+      <div class="rg-footer-row">
+        <button class="rg-btn-done" id="rg-btn-done" onclick="closeReasonGuide(false,'done')">
+          ✓ 저장 후 추천 완료<br><span style="font-size:10px;opacity:0.8;">Save &amp; finish → Your info</span>
+        </button>
+        <button class="rg-btn-more" id="rg-btn-more" onclick="closeReasonGuide(false,'next')">
+          ✓ 저장 후 계속 추천<br><span style="font-size:10px;opacity:0.75;">Save &amp; nominate more</span>
+        </button>
+      </div>
+      <button class="rg-skip-link" onclick="closeReasonGuide(true,'auto')">사유 없이 건너뛰기 / Skip without reason</button>
     </div>
   </div>
 </div>
@@ -1205,6 +1232,24 @@ function updateSelCount(type) {
 }
 
 // ── Step bar + 다음 단계 이동 ────────────────────────────────
+/* iOS Safari는 키보드가 닫히는 애니메이션 중에 smooth 스크롤을 취소하는
+   경우가 있어, 위치를 직접 계산해 스크롤하고 잠시 후 한 번 더 재시도한다. */
+function scrollToEl(el, block) {
+  if (!el) return;
+  const doScroll = () => {
+    const rect = el.getBoundingClientRect();
+    let top;
+    if (block === 'center') {
+      top = rect.top + window.pageYOffset - Math.max(0, (window.innerHeight - rect.height) / 2);
+    } else {
+      top = rect.top + window.pageYOffset - 14;
+    }
+    window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+  };
+  doScroll();
+  setTimeout(doScroll, 500);  // iOS 키보드 닫힘 이후 재시도
+}
+
 function setStep(type, step) {
   const bar = document.getElementById(type + '-step-bar');
   if (!bar) return;
@@ -1218,8 +1263,9 @@ function setStep(type, step) {
 function gotoSubmitter(type) {
   const card = document.getElementById(type + '-submitter-card');
   if (!card) return;
+  dismissKeyboard();
   setStep(type, 2);
-  card.scrollIntoView({ behavior:'smooth', block:'start' });
+  scrollToEl(card, 'start');
   const nameInp = document.getElementById(type + '-submitter-name');
   if (nameInp && !nameInp.value.trim()) {
     nameInp.classList.add('input-pulse');
@@ -1235,6 +1281,14 @@ function refreshChips(type) {
 
 // ── Name Picker Popup ────────────────────────────────────────
 let pickerState = { type: null, slot: null };
+
+// 키보드 강제 내리기 (안드로이드에서 키보드가 팝업을 가리는 문제 방지)
+function dismissKeyboard() {
+  const ae = document.activeElement;
+  if (ae && typeof ae.blur === 'function') ae.blur();
+  const searchEl = document.getElementById('picker-search-input');
+  if (searchEl) searchEl.blur();
+}
 
 function openNamePicker(type, slot) {
   // blur the input immediately so keyboard doesn't pop on mobile
@@ -1255,16 +1309,18 @@ function openNamePicker(type, slot) {
   if (searchEl) { searchEl.value = ''; }
   renderPickerList('');
   // 팝업 내부 스크롤 맨 위로
+  // ※ 검색창 자동 포커스 제거 — 안드로이드에서 키보드가 자동으로 올라와
+  //    팝업을 가리는 문제 방지. 검색이 필요하면 직접 탭해서 입력.
   setTimeout(() => {
     const body = document.getElementById('picker-body-list');
     const pickerBody = body ? body.parentElement : null;
     if (body) body.scrollTop = 0;
     if (pickerBody) pickerBody.scrollTop = 0;
-    if (searchEl) searchEl.focus();
   }, 50);
 }
 
 function closeNamePicker() {
+  dismissKeyboard();
   document.getElementById('name-picker-overlay').classList.remove('open');
   document.getElementById('name-picker-panel').classList.remove('open');
   document.body.style.overflow = '';
@@ -1352,6 +1408,7 @@ function openPhotoModalFromPicker(type, name, groupLabel) {
 function selectFromPicker(name) {
   const { type, slot } = pickerState;
   if (!type || !slot) return;
+  dismissKeyboard(); // 검색창에 포커스가 있었다면 키보드 내리기
 
   // If same name is in another slot, clear it
   const max = type === 'elder' ? 3 : 15;
@@ -1378,6 +1435,7 @@ function selectFromPicker(name) {
 let rgState = { type: null, slot: null };
 
 function openReasonGuide(type, slot, name) {
+  dismissKeyboard(); // 키보드가 떠 있으면 내리고 팝업 표시
   rgState = { type, slot };
 
   // Set nominee name + avatar
@@ -1411,6 +1469,17 @@ function openReasonGuide(type, slot, name) {
   const existingMemo = document.getElementById(type + '-memo-' + slot);
   document.getElementById('rg-memo').value = existingMemo ? existingMemo.value : '';
 
+  // 남은 빈 칸이 없으면 "계속 추천" 버튼 숨김 (추천 완료만 표시)
+  const max = type === 'elder' ? 3 : 15;
+  let hasEmpty = false;
+  for (let i = 1; i <= max; i++) {
+    if (i === slot) continue;
+    const el = document.getElementById(type + '-name-' + i);
+    if (el && el.value.trim() === '') { hasEmpty = true; break; }
+  }
+  const moreBtn = document.getElementById('rg-btn-more');
+  if (moreBtn) moreBtn.style.display = hasEmpty ? 'block' : 'none';
+
   document.getElementById('reasonGuideOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
   // 팝업 내부 스크롤 맨 위로
@@ -1425,8 +1494,32 @@ function openReasonGuide(type, slot, name) {
   }, 50);
 }
 
-function closeReasonGuide(skip) {
+function closeReasonGuide(skip, mode) {
+  mode = mode || 'auto';
   const { type, slot } = rgState;
+
+  // "추천 완료" 선택인데 아직 빈 칸이 남아 있으면 한 번 더 권유
+  if (mode === 'done' && type) {
+    const maxN = type === 'elder' ? 3 : 15;
+    let remaining = 0;
+    for (let i = 1; i <= maxN; i++) {
+      if (i === slot) continue; // 현재 칸은 방금 채워짐
+      const el = document.getElementById(type + '-name-' + i);
+      if (el && el.value.trim() === '') remaining++;
+    }
+    if (remaining > 0) {
+      const posName = type === 'elder' ? '장로' : '안수집사';
+      const ok = confirm(
+        `아직 ${remaining}명을 더 추천하실 수 있습니다.\n` +
+        `가능한 많은 분을 추천해 주시면 큰 도움이 됩니다.\n\n` +
+        `[확인] 추천 완료 → 추천인 정보 입력\n[취소] 계속 추천하기\n\n` +
+        `You may nominate ${remaining} more ${posName === '장로' ? 'elder(s)' : 'deacon(s)'}.\n` +
+        `Press OK to finish, or Cancel to nominate more.`
+      );
+      if (!ok) mode = 'next'; // 계속 추천으로 전환
+    }
+  }
+
   if (!skip && type && slot) {
     // Save selected quals back to the nominee card
     const activeItems = document.querySelectorAll('#rg-qual-grid .rg-qual-item.active');
@@ -1454,21 +1547,35 @@ function closeReasonGuide(skip) {
 
   document.getElementById('reasonGuideOverlay').classList.remove('open');
   document.body.style.overflow = '';
+  dismissKeyboard(); // 사유 메모 입력 중이었으면 키보드 내리기
 
-  // 다음 빈 추천 칸으로 자동 스크롤 + 하이라이트
   const savedType = rgState.type;
   const savedSlot = rgState.slot;
   rgState = { type: null, slot: null };
 
   setTimeout(() => {
     if (!savedType) return;
+
+    // "추천 완료" 선택 → 바로 추천인 정보 입력으로
+    if (mode === 'done') {
+      gotoSubmitter(savedType);
+      return;
+    }
+
     const max = savedType === 'elder' ? 3 : 15;
-    // 다음 빈 슬롯 찾기
+    // 다음 빈 슬롯 찾기: 현재 칸 이후 → 없으면 앞쪽 칸까지 전체 탐색
     let nextSlot = -1;
     for (let i = savedSlot + 1; i <= max; i++) {
       const el = document.getElementById(savedType + '-name-' + i);
       if (el && el.value.trim() === '') { nextSlot = i; break; }
     }
+    if (nextSlot === -1) {
+      for (let i = 1; i < savedSlot; i++) {
+        const el = document.getElementById(savedType + '-name-' + i);
+        if (el && el.value.trim() === '') { nextSlot = i; break; }
+      }
+    }
+
     if (nextSlot === -1) {
       // 모든 칸이 채워짐 → 추천인 정보 입력 단계로 자연스럽게 이동
       gotoSubmitter(savedType);
@@ -1479,8 +1586,8 @@ function closeReasonGuide(skip) {
     const nextCard  = document.getElementById(savedType + '-card-' + nextSlot);
     if (!nextCard || !nextInput) return;
 
-    // 카드 스크롤
-    nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // 카드 스크롤 (iOS 재시도 포함)
+    scrollToEl(nextCard, 'center');
 
     // 입력란 펄스 애니메이션으로 강조
     nextInput.classList.add('input-pulse');
