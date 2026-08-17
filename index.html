@@ -1728,6 +1728,24 @@ function confirmSubmit() {
   doSubmit(t);
 }
 
+// ── 기기 식별 (도용 탐지용) ──────────────────────────────────
+function getDeviceId() {
+  let id = '';
+  try {
+    id = localStorage.getItem('kpcm_device_id') || '';
+    if (!id) {
+      id = (crypto.randomUUID ? crypto.randomUUID() : Date.now() + '-' + Math.random().toString(36).slice(2));
+      localStorage.setItem('kpcm_device_id', id);
+    }
+  } catch(e) { id = 'nols'; }
+  const fp = [navigator.userAgent, navigator.language,
+    screen.width + 'x' + screen.height,
+    Intl.DateTimeFormat().resolvedOptions().timeZone].join('|');
+  let h = 0;
+  for (let i = 0; i < fp.length; i++) h = (h * 31 + fp.charCodeAt(i)) | 0;
+  return id.slice(0, 8) + '-' + Math.abs(h).toString(36);
+}
+
 // ── Submit (2단계: 실제 전송) ────────────────────────────────
 async function doSubmit(type) {
   const nameEl = document.getElementById(type + '-submitter-name');
@@ -1753,12 +1771,13 @@ async function doSubmit(type) {
   btn.innerHTML = '제출 중... / Submitting...<span class="btn-sub">잠시만 기다려 주세요</span>';
 
   try {
+    const payload = JSON.stringify({ type, submitterName:nameEl.value.trim(), submitterPhone:phoneEl.value.trim(), date, nominees, deviceId:getDeviceId() });
     let submitResult = null;
     try {
       const submitRes = await fetch(SCRIPT_URL, {
         method:'POST', mode:'cors',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({ type, submitterName:nameEl.value.trim(), submitterPhone:phoneEl.value.trim(), date, nominees })
+        body:payload
       });
       submitResult = await submitRes.json();
     } catch(e) {
@@ -1766,7 +1785,7 @@ async function doSubmit(type) {
       await fetch(SCRIPT_URL, {
         method:'POST', mode:'no-cors',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({ type, submitterName:nameEl.value.trim(), submitterPhone:phoneEl.value.trim(), date, nominees })
+        body:payload
       });
     }
 
